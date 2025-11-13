@@ -83,6 +83,181 @@ const flightCosts = {
     long: 1200
 };
 
+// City to country mapping for smarter flight estimates
+const cityToCountry = {
+    // India
+    'New Delhi': 'India', 'Mumbai': 'India', 'Bangalore': 'India', 'Hyderabad': 'India',
+    'Chennai': 'India', 'Kolkata': 'India', 'Pune': 'India', 'Ahmedabad': 'India',
+    'Jaipur': 'India', 'Goa': 'India', 'Kochi': 'India', 'Lucknow': 'India',
+    // USA
+    'New York': 'USA', 'Los Angeles': 'USA', 'San Francisco': 'USA', 'Chicago': 'USA',
+    'Boston': 'USA', 'Seattle': 'USA', 'Miami': 'USA', 'Las Vegas': 'USA',
+    // UK
+    'London': 'UK', 'Manchester': 'UK', 'Edinburgh': 'UK', 'Birmingham': 'UK',
+    // Asia
+    'Tokyo': 'Japan', 'Osaka': 'Japan', 'Kyoto': 'Japan',
+    'Bangkok': 'Thailand', 'Phuket': 'Thailand', 'Chiang Mai': 'Thailand',
+    'Singapore': 'Singapore',
+    'Hong Kong': 'Hong Kong',
+    'Seoul': 'South Korea',
+    'Dubai': 'UAE', 'Abu Dhabi': 'UAE',
+    'Kuala Lumpur': 'Malaysia',
+    'Manila': 'Philippines',
+    'Jakarta': 'Indonesia', 'Bali': 'Indonesia',
+    'Hanoi': 'Vietnam', 'Ho Chi Minh City': 'Vietnam',
+    // Europe
+    'Paris': 'France', 'Lyon': 'France', 'Nice': 'France',
+    'Rome': 'Italy', 'Milan': 'Italy', 'Venice': 'Italy', 'Florence': 'Italy',
+    'Barcelona': 'Spain', 'Madrid': 'Spain', 'Seville': 'Spain',
+    'Berlin': 'Germany', 'Munich': 'Germany', 'Frankfurt': 'Germany',
+    'Amsterdam': 'Netherlands',
+    'Brussels': 'Belgium',
+    'Vienna': 'Austria',
+    'Zurich': 'Switzerland', 'Geneva': 'Switzerland',
+    'Copenhagen': 'Denmark',
+    'Stockholm': 'Sweden',
+    'Oslo': 'Norway',
+    'Helsinki': 'Finland',
+    'Reykjavik': 'Iceland',
+    'Lisbon': 'Portugal', 'Porto': 'Portugal',
+    'Athens': 'Greece',
+    'Istanbul': 'Turkey',
+    'Prague': 'Czech Republic',
+    'Budapest': 'Hungary',
+    'Krakow': 'Poland',
+    'Bucharest': 'Romania',
+    'Sofia': 'Bulgaria',
+    // Oceania
+    'Sydney': 'Australia', 'Melbourne': 'Australia', 'Brisbane': 'Australia',
+    'Auckland': 'New Zealand',
+    // South America
+    'Buenos Aires': 'Argentina',
+    'Rio de Janeiro': 'Brazil', 'Sao Paulo': 'Brazil',
+    'Lima': 'Peru',
+    'Bogota': 'Colombia',
+    'Santiago': 'Chile',
+    // Africa
+    'Cairo': 'Egypt',
+    'Marrakech': 'Morocco',
+    'Cape Town': 'South Africa', 'Johannesburg': 'South Africa',
+    'Nairobi': 'Kenya',
+    // Middle East
+    'Tel Aviv': 'Israel',
+    'Doha': 'Qatar',
+    // North America (Canada & Mexico)
+    'Toronto': 'Canada', 'Vancouver': 'Canada', 'Montreal': 'Canada',
+    'Mexico City': 'Mexico', 'Cancun': 'Mexico'
+};
+
+// Continental regions for distance estimation
+const continents = {
+    'India': 'Asia',
+    'Japan': 'Asia',
+    'Thailand': 'Asia',
+    'Singapore': 'Asia',
+    'Hong Kong': 'Asia',
+    'South Korea': 'Asia',
+    'Malaysia': 'Asia',
+    'Philippines': 'Asia',
+    'Indonesia': 'Asia',
+    'Vietnam': 'Asia',
+    'UAE': 'Middle East',
+    'Qatar': 'Middle East',
+    'Israel': 'Middle East',
+    'Turkey': 'Middle East',
+    'France': 'Europe',
+    'Italy': 'Europe',
+    'Spain': 'Europe',
+    'Germany': 'Europe',
+    'Netherlands': 'Europe',
+    'Belgium': 'Europe',
+    'Austria': 'Europe',
+    'Switzerland': 'Europe',
+    'Denmark': 'Europe',
+    'Sweden': 'Europe',
+    'Norway': 'Europe',
+    'Finland': 'Europe',
+    'Iceland': 'Europe',
+    'Portugal': 'Europe',
+    'Greece': 'Europe',
+    'Czech Republic': 'Europe',
+    'Hungary': 'Europe',
+    'Poland': 'Europe',
+    'Romania': 'Europe',
+    'Bulgaria': 'Europe',
+    'UK': 'Europe',
+    'USA': 'North America',
+    'Canada': 'North America',
+    'Mexico': 'North America',
+    'Australia': 'Oceania',
+    'New Zealand': 'Oceania',
+    'Argentina': 'South America',
+    'Brazil': 'South America',
+    'Peru': 'South America',
+    'Colombia': 'South America',
+    'Chile': 'South America',
+    'Egypt': 'Africa',
+    'Morocco': 'Africa',
+    'South Africa': 'Africa',
+    'Kenya': 'Africa'
+};
+
+function estimateFlightType(source, destination) {
+    // If no source provided, use the manual selection
+    if (!source) {
+        return null; // Will use whatever user selected
+    }
+    
+    const sourceCountry = cityToCountry[source];
+    const destCountry = cityToCountry[destination];
+    
+    // If we don't know either city, return null to use manual selection
+    if (!sourceCountry || !destCountry) {
+        return null;
+    }
+    
+    // Same country = domestic
+    if (sourceCountry === destCountry) {
+        return 'domestic';
+    }
+    
+    const sourceContinent = continents[sourceCountry];
+    const destContinent = continents[destCountry];
+    
+    // Same continent or neighboring regions
+    if (sourceContinent === destContinent) {
+        // Same continent but different country
+        if (sourceContinent === 'Europe' || sourceContinent === 'Asia') {
+            return 'short'; // Most intra-continental flights in Europe/Asia are short
+        }
+        return 'medium';
+    }
+    
+    // Different continents - determine distance
+    const intercontinentalPairs = {
+        'Asia-Europe': 'medium',
+        'Asia-Middle East': 'short',
+        'Europe-Middle East': 'short',
+        'Europe-North America': 'long',
+        'Asia-North America': 'long',
+        'Asia-Oceania': 'medium',
+        'Europe-Africa': 'short',
+        'Asia-Africa': 'medium',
+        'North America-South America': 'medium',
+        'Europe-South America': 'long',
+        'Asia-South America': 'long',
+        'Oceania-North America': 'long',
+        'Oceania-Europe': 'long',
+        'Africa-South America': 'long'
+    };
+    
+    // Check both directions
+    const pair1 = `${sourceContinent}-${destContinent}`;
+    const pair2 = `${destContinent}-${sourceContinent}`;
+    
+    return intercontinentalPairs[pair1] || intercontinentalPairs[pair2] || 'long';
+}
+
 const accommodationCosts = {
     budget: { budget: 30, moderate: 40, expensive: 50, luxury: 70 },
     moderate: { budget: 60, moderate: 80, expensive: 100, luxury: 130 },
@@ -118,6 +293,79 @@ function setupAutocomplete() {
     setupAutocompleteForField('destination', 'autocomplete-list-destination');
 }
 
+// Approximate coordinates for major cities (lat, lon)
+const cityCoordinates = {
+    // India
+    'New Delhi': [28.6139, 77.2090], 'Mumbai': [19.0760, 72.8777], 'Bangalore': [12.9716, 77.5946],
+    'Hyderabad': [17.3850, 78.4867], 'Chennai': [13.0827, 80.2707], 'Kolkata': [22.5726, 88.3639],
+    'Pune': [18.5204, 73.8567], 'Ahmedabad': [23.0225, 72.5714], 'Jaipur': [26.9124, 75.7873],
+    'Goa': [15.2993, 74.1240], 'Kochi': [9.9312, 76.2673], 'Lucknow': [26.8467, 80.9462],
+    // USA
+    'New York': [40.7128, -74.0060], 'Los Angeles': [34.0522, -118.2437], 'San Francisco': [37.7749, -122.4194],
+    'Chicago': [41.8781, -87.6298], 'Boston': [42.3601, -71.0589], 'Seattle': [47.6062, -122.3321],
+    'Miami': [25.7617, -80.1918], 'Las Vegas': [36.1699, -115.1398],
+    // UK
+    'London': [51.5074, -0.1278], 'Manchester': [53.4808, -2.2426], 'Edinburgh': [55.9533, -3.1883],
+    'Birmingham': [52.4862, -1.8904],
+    // Asia
+    'Tokyo': [35.6762, 139.6503], 'Osaka': [34.6937, 135.5023], 'Kyoto': [35.0116, 135.7681],
+    'Bangkok': [13.7563, 100.5018], 'Phuket': [7.8804, 98.3923], 'Chiang Mai': [18.7883, 98.9853],
+    'Singapore': [1.3521, 103.8198], 'Hong Kong': [22.3193, 114.1694], 'Seoul': [37.5665, 126.9780],
+    'Dubai': [25.2048, 55.2708], 'Abu Dhabi': [24.4539, 54.3773], 'Kuala Lumpur': [3.1390, 101.6869],
+    'Manila': [14.5995, 120.9842], 'Jakarta': [6.2088, 106.8456], 'Bali': [-8.4095, 115.1889],
+    'Hanoi': [21.0285, 105.8542], 'Ho Chi Minh City': [10.8231, 106.6297],
+    // Europe
+    'Paris': [48.8566, 2.3522], 'Lyon': [45.7640, 4.8357], 'Nice': [43.7102, 7.2620],
+    'Rome': [41.9028, 12.4964], 'Milan': [45.4642, 9.1900], 'Venice': [45.4408, 12.3155],
+    'Florence': [43.7696, 11.2558], 'Barcelona': [41.3851, 2.1734], 'Madrid': [40.4168, -3.7038],
+    'Seville': [37.3891, -5.9845], 'Berlin': [52.5200, 13.4050], 'Munich': [48.1351, 11.5820],
+    'Frankfurt': [50.1109, 8.6821], 'Amsterdam': [52.3676, 4.9041], 'Brussels': [50.8503, 4.3517],
+    'Vienna': [48.2082, 16.3738], 'Zurich': [47.3769, 8.5417], 'Geneva': [46.2044, 6.1432],
+    'Copenhagen': [55.6761, 12.5683], 'Stockholm': [59.3293, 18.0686], 'Oslo': [59.9139, 10.7522],
+    'Helsinki': [60.1699, 24.9384], 'Reykjavik': [64.1466, -21.9426], 'Lisbon': [38.7223, -9.1393],
+    'Porto': [41.1579, -8.6291], 'Athens': [37.9838, 23.7275], 'Istanbul': [41.0082, 28.9784],
+    'Prague': [50.0755, 14.4378], 'Budapest': [47.4979, 19.0402], 'Krakow': [50.0647, 19.9450],
+    'Bucharest': [44.4268, 26.1025], 'Sofia': [42.6977, 23.3219],
+    // Oceania
+    'Sydney': [-33.8688, 151.2093], 'Melbourne': [-37.8136, 144.9631], 'Brisbane': [-27.4698, 153.0251],
+    'Auckland': [-36.8485, 174.7633],
+    // South America
+    'Buenos Aires': [-34.6037, -58.3816], 'Rio de Janeiro': [-22.9068, -43.1729], 'Sao Paulo': [-23.5505, -46.6333],
+    'Lima': [-12.0464, -77.0428], 'Bogota': [4.7110, -74.0721], 'Santiago': [-33.4489, -70.6693],
+    'La Paz': [-16.5000, -68.1500], 'Quito': [-0.1807, -78.4678],
+    // Africa
+    'Cairo': [30.0444, 31.2357], 'Marrakech': [31.6295, -7.9811], 'Tunis': [36.8065, 10.1815],
+    'Cape Town': [-33.9249, 18.4241], 'Johannesburg': [-26.2041, 28.0473], 'Nairobi': [-1.2864, 36.8172],
+    // Middle East
+    'Tel Aviv': [32.0853, 34.7818], 'Doha': [25.2854, 51.5310],
+    // North America (Canada & Mexico)
+    'Toronto': [43.6532, -79.3832], 'Vancouver': [49.2827, -123.1207], 'Montreal': [45.5017, -73.5673],
+    'Mexico City': [19.4326, -99.1332], 'Cancun': [21.1619, -86.8515],
+    // Additional
+    'Siem Reap': [13.3671, 103.8448], 'Kathmandu': [27.7172, 85.3240], 'Colombo': [6.9271, 79.8612]
+};
+
+function calculateDistance(city1, city2) {
+    const coords1 = cityCoordinates[city1];
+    const coords2 = cityCoordinates[city2];
+    
+    if (!coords1 || !coords2) return Infinity;
+    
+    // Haversine formula for great circle distance
+    const R = 6371; // Earth's radius in km
+    const lat1 = coords1[0] * Math.PI / 180;
+    const lat2 = coords2[0] * Math.PI / 180;
+    const dLat = (coords2[0] - coords1[0]) * Math.PI / 180;
+    const dLon = (coords2[1] - coords1[1]) * Math.PI / 180;
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1) * Math.cos(lat2) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    
+    return R * c; // Distance in km
+}
+
 function setupAutocompleteForField(fieldId, listId) {
     const input = document.getElementById(fieldId);
     const autocompleteList = document.getElementById(listId);
@@ -129,9 +377,24 @@ function setupAutocompleteForField(fieldId, listId) {
         
         if (!val) return;
         
-        const matches = Object.keys(destinations).filter(dest => 
+        let matches = Object.keys(destinations).filter(dest => 
             dest.toLowerCase().includes(val)
-        ).slice(0, 5);
+        );
+        
+        // Sort by distance if this is destination field and source is provided
+        if (fieldId === 'destination') {
+            const sourceCity = document.getElementById('source').value;
+            if (sourceCity && cityCoordinates[sourceCity]) {
+                matches.sort((a, b) => {
+                    const distA = calculateDistance(sourceCity, a);
+                    const distB = calculateDistance(sourceCity, b);
+                    return distA - distB;
+                });
+            }
+        }
+        
+        // Take top 5 matches
+        matches = matches.slice(0, 5);
         
         if (matches.length > 0) {
             matches.forEach((match, index) => {
@@ -292,6 +555,28 @@ function calculate() {
     const currency = document.getElementById('currency').value;
     const includeDailyExpense = document.getElementById('includeDailyExpense').checked;
 
+    // Validate dates - both must be provided or both must be empty
+    if ((startDate && !endDate) || (!startDate && endDate)) {
+        alert('Please provide both start date and end date, or leave both empty.');
+        // Show error state in display with Material Icons robot
+        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b;">ERROR</div>';
+        document.getElementById('breakdown').innerHTML = '';
+        document.getElementById('perPerson').textContent = '';
+        lastCalculation = null;
+        return;
+    }
+    
+    // Validate that start and end dates are not the same
+    if (startDate && endDate && startDate === endDate) {
+        alert('Start date and end date cannot be the same. Please select different dates.');
+        // Show error state in display with Material Icons robot
+        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b;">ERROR</div>';
+        document.getElementById('breakdown').innerHTML = '';
+        document.getElementById('perPerson').textContent = '';
+        lastCalculation = null;
+        return;
+    }
+
     if (!destination || !travelMode || duration < 1) {
         return;
     }
@@ -299,7 +584,20 @@ function calculate() {
     const region = getRegionForDestination(destination);
     const seasonalMultiplier = getSeasonalMultiplier(startDate, endDate);
 
-    const flightCost = flightCosts[travelMode] * people * seasonalMultiplier;
+    // Smart flight type estimation
+    let actualFlightType = travelMode;
+    
+    // If user provided both source and destination, try to estimate
+    if (source && destination) {
+        const estimated = estimateFlightType(source, destination);
+        if (estimated) {
+            actualFlightType = estimated;
+            // Update the dropdown to show the estimated value
+            document.getElementById('travelMode').value = estimated;
+        }
+    }
+
+    const flightCost = flightCosts[actualFlightType] * people * seasonalMultiplier;
     const nights = Math.max(duration - 1, 1);
     const accommodationCost = accommodationCosts[accommodation][region] * nights * seasonalMultiplier;
     const mealCost = mealCosts[region] * duration * people;
@@ -344,10 +642,25 @@ function saveReceipt() {
     const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense } = lastCalculation;
     const nights = Math.max(duration - 1, 1);
     const perPersonCost = totalCost / people;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
     
     let tripRoute = destination;
     if (source) {
         tripRoute = `${source} → ${destination}`;
+    }
+    
+    // Format dates if provided
+    let dateDisplay = '';
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const options = { month: 'short', day: 'numeric', year: 'numeric' };
+        dateDisplay = `<strong>Dates:</strong> ${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}<br>`;
+    } else if (startDate) {
+        const start = new Date(startDate);
+        const options = { month: 'short', day: 'numeric', year: 'numeric' };
+        dateDisplay = `<strong>Start Date:</strong> ${start.toLocaleDateString('en-US', options)}<br>`;
     }
     
     let receiptHTML = `
@@ -359,6 +672,7 @@ function saveReceipt() {
         <div style="margin: 15px 0;">
             <strong>Route:</strong> ${tripRoute}<br>
             <strong>Duration:</strong> ${duration} days<br>
+            ${dateDisplay}
             <strong>Travelers:</strong> ${people}
         </div>
         <div class="receipt-item">
