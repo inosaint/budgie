@@ -126,15 +126,6 @@ Both are free and load from reliable CDNs.
 - `script.js`: ~20 KB
 - **Total**: ~40 KB (tiny!)
 
-## 🤝 Contributing
-
-Want to add features or improve Budgie?
-
-1. Update costs with current market rates
-2. Add more destinations to autocomplete
-3. Improve seasonal pricing logic
-4. Add new currency options
-5. Enhance mobile UX
 
 ## 📄 License
 
@@ -146,4 +137,3 @@ Budgie helps travelers estimate trip costs before booking. Named after the budge
 
 ---
 
-**Coded with** ![Claude AI](https://upload.wikimedia.org/wikipedia/commons/b/b0/Claude_AI_symbol.svg)

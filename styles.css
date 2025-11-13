@@ -389,21 +389,23 @@ input[type="date"] {
     position: relative;
 }
 
-.autocomplete-container input {
-    border-bottom: 2px solid #444 !important;
-}
-
 .autocomplete-items {
     position: absolute;
     background: #1a1a1a;
-    border: 2px solid #444;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
     z-index: 99;
     top: 100%;
     left: 0;
     right: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+}
+
+.autocomplete-items.has-items {
     max-height: 200px;
+    border: 2px solid #444;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
     overflow-y: auto;
 }
 

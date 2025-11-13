@@ -106,9 +106,10 @@ const activityCosts = {
 
 // Store calculated values globally
 let lastCalculation = null;
+let currentFocus = -1;
 
 function getRegionForDestination(destination) {
-    return destinations[destination] || 'moderate'; // default to moderate if not found
+    return destinations[destination] || 'moderate';
 }
 
 // Autocomplete functionality
@@ -124,6 +125,7 @@ function setupAutocompleteForField(fieldId, listId) {
     input.addEventListener('input', function() {
         const val = this.value.toLowerCase();
         closeAutocompleteList(listId);
+        currentFocus = -1;
         
         if (!val) return;
         
@@ -132,9 +134,10 @@ function setupAutocompleteForField(fieldId, listId) {
         ).slice(0, 5);
         
         if (matches.length > 0) {
-            matches.forEach(match => {
+            matches.forEach((match, index) => {
                 const div = document.createElement('div');
                 div.textContent = match;
+                div.setAttribute('data-index', index);
                 div.addEventListener('click', function() {
                     input.value = match;
                     closeAutocompleteList(listId);
@@ -142,18 +145,60 @@ function setupAutocompleteForField(fieldId, listId) {
                 });
                 autocompleteList.appendChild(div);
             });
+            autocompleteList.classList.add('has-items');
         }
     });
+    
+    // Keyboard navigation for autocomplete
+    input.addEventListener('keydown', function(e) {
+        const items = autocompleteList.getElementsByTagName('div');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentFocus++;
+            addActive(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentFocus--;
+            addActive(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentFocus > -1 && items[currentFocus]) {
+                items[currentFocus].click();
+            }
+        } else if (e.key === 'Escape') {
+            closeAutocompleteList(listId);
+            currentFocus = -1;
+        }
+    });
+    
+    function addActive(items) {
+        if (!items || items.length === 0) return;
+        removeActive(items);
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        items[currentFocus].classList.add('autocomplete-active');
+        items[currentFocus].scrollIntoView({ block: 'nearest' });
+    }
+    
+    function removeActive(items) {
+        for (let i = 0; i < items.length; i++) {
+            items[i].classList.remove('autocomplete-active');
+        }
+    }
     
     document.addEventListener('click', function(e) {
         if (e.target !== input) {
             closeAutocompleteList(listId);
+            currentFocus = -1;
         }
     });
 }
 
 function closeAutocompleteList(listId) {
-    document.getElementById(listId).innerHTML = '';
+    const list = document.getElementById(listId);
+    list.innerHTML = '';
+    list.classList.remove('has-items');
 }
 
 function toggleAdvanced() {
@@ -251,9 +296,7 @@ function calculate() {
         return;
     }
     
-    // Auto-detect region
     const region = getRegionForDestination(destination);
-    
     const seasonalMultiplier = getSeasonalMultiplier(startDate, endDate);
 
     const flightCost = flightCosts[travelMode] * people * seasonalMultiplier;
@@ -366,7 +409,6 @@ function saveReceipt() {
     document.getElementById('receiptContent').innerHTML = receiptHTML;
     document.getElementById('receiptOverlay').classList.add('show');
     
-    // Download receipt as image after a brief delay to ensure rendering
     setTimeout(() => {
         downloadReceiptAsImage();
     }, 500);
@@ -400,7 +442,6 @@ function generateItinerary() {
         return;
     }
     
-    // Build URL with parameters for traviti
     let url = 'https://traviti.netlify.app/?';
     const params = new URLSearchParams();
     
@@ -416,22 +457,17 @@ function generateItinerary() {
     }
     
     url += params.toString();
-    
-    // Open in new tab
     window.open(url, '_blank');
 }
 
 function downloadReceiptAsImage() {
     const receipt = document.getElementById('receipt');
     
-    // Use html2canvas library
     html2canvas(receipt, {
         backgroundColor: '#ffffff',
         scale: 2
     }).then(canvas => {
-        // Convert canvas to blob
         canvas.toBlob(blob => {
-            // Create download link
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -475,7 +511,6 @@ document.querySelectorAll('input, select').forEach(element => {
             }
         });
         
-        // Also trigger on input for text fields for real-time updates
         if (element.type === 'text' || element.type === 'number') {
             element.addEventListener('input', () => {
                 const destination = document.getElementById('destination').value;
@@ -490,14 +525,8 @@ document.querySelectorAll('input, select').forEach(element => {
     }
 });
 
-// Initialize autocomplete
-setupAutocomplete();
-
-// Keyboard navigation
+// Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-    // Tab navigation is default, but we can add shortcuts
-    
-    // Alt + S for Save
     if (e.altKey && e.key === 's') {
         e.preventDefault();
         if (lastCalculation) {
@@ -505,19 +534,16 @@ document.addEventListener('keydown', function(e) {
         }
     }
     
-    // Alt + C for Clear
     if (e.altKey && e.key === 'c') {
         e.preventDefault();
         reset();
     }
     
-    // Alt + A for Advanced Options toggle
     if (e.altKey && e.key === 'a') {
         e.preventDefault();
         toggleAdvanced();
     }
     
-    // Escape to close receipt
     if (e.key === 'Escape') {
         const overlay = document.getElementById('receiptOverlay');
         if (overlay.classList.contains('show')) {
@@ -526,82 +552,5 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Enhanced autocomplete navigation with arrow keys
-let currentFocus = -1;
-
-function setupAutocompleteForField(fieldId, listId) {
-    const input = document.getElementById(fieldId);
-    const autocompleteList = document.getElementById(listId);
-    
-    input.addEventListener('input', function() {
-        const val = this.value.toLowerCase();
-        closeAutocompleteList(listId);
-        currentFocus = -1;
-        
-        if (!val) return;
-        
-        const matches = Object.keys(destinations).filter(dest => 
-            dest.toLowerCase().includes(val)
-        ).slice(0, 5);
-        
-        if (matches.length > 0) {
-            matches.forEach((match, index) => {
-                const div = document.createElement('div');
-                div.textContent = match;
-                div.setAttribute('data-index', index);
-                div.addEventListener('click', function() {
-                    input.value = match;
-                    closeAutocompleteList(listId);
-                    calculate();
-                });
-                autocompleteList.appendChild(div);
-            });
-        }
-    });
-    
-    // Keyboard navigation for autocomplete
-    input.addEventListener('keydown', function(e) {
-        const items = autocompleteList.getElementsByTagName('div');
-        
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            currentFocus++;
-            addActive(items);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            currentFocus--;
-            addActive(items);
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (currentFocus > -1 && items[currentFocus]) {
-                items[currentFocus].click();
-            }
-        } else if (e.key === 'Escape') {
-            closeAutocompleteList(listId);
-            currentFocus = -1;
-        }
-    });
-    
-    function addActive(items) {
-        if (!items || items.length === 0) return;
-        removeActive(items);
-        if (currentFocus >= items.length) currentFocus = 0;
-        if (currentFocus < 0) currentFocus = items.length - 1;
-        items[currentFocus].classList.add('autocomplete-active');
-        items[currentFocus].scrollIntoView({ block: 'nearest' });
-    }
-    
-    function removeActive(items) {
-        for (let i = 0; i < items.length; i++) {
-            items[i].classList.remove('autocomplete-active');
-        }
-    }
-    
-    document.addEventListener('click', function(e) {
-        if (e.target !== input) {
-            closeAutocompleteList(listId);
-            currentFocus = -1;
-        }
-    });
-}
-    </script>
+// Initialize autocomplete
+setupAutocomplete();
