@@ -14,38 +14,36 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Currency Selector -->
-    <div class="currency-selector-top">
-        <select id="currency" onchange="updateDisplay()">
-            <option value="INR" selected>🇮🇳 INR</option>
-            <option value="USD">🇺🇸 USD</option>
-            <option value="EUR">🇪🇺 EUR</option>
-            <option value="GBP">🇬🇧 GBP</option>
-            <option value="JPY">🇯🇵 JPY</option>
-            <option value="AUD">🇦🇺 AUD</option>
-            <option value="CAD">🇨🇦 CAD</option>
-            <option value="CHF">🇨🇭 CHF</option>
-            <option value="CNY">🇨🇳 CNY</option>
-            <option value="SGD">🇸🇬 SGD</option>
-            <option value="AED">🇦🇪 AED</option>
-            <option value="THB">🇹🇭 THB</option>
-            <option value="MYR">🇲🇾 MYR</option>
-            <option value="IDR">🇮🇩 IDR</option>
-            <option value="KRW">🇰🇷 KRW</option>
-            <option value="BRL">🇧🇷 BRL</option>
-            <option value="MXN">🇲🇽 MXN</option>
-            <option value="ZAR">🇿🇦 ZAR</option>
-            <option value="TRY">🇹🇷 TRY</option>
-            <option value="RUB">🇷🇺 RUB</option>
-        </select>
-    </div>
-
     <!-- Calculator -->
     <div class="calculator-container">
         <!-- Header -->
         <div class="calculator-header">
             <div class="calculator-title">
                 <span class="budgie-text">BUDGIE</span>
+            </div>
+            <div class="currency-selector-top">
+                <select id="currency" onchange="updateDisplay()">
+                    <option value="INR" selected>🇮🇳 INR</option>
+                    <option value="USD">🇺🇸 USD</option>
+                    <option value="EUR">🇪🇺 EUR</option>
+                    <option value="GBP">🇬🇧 GBP</option>
+                    <option value="JPY">🇯🇵 JPY</option>
+                    <option value="AUD">🇦🇺 AUD</option>
+                    <option value="CAD">🇨🇦 CAD</option>
+                    <option value="CHF">🇨🇭 CHF</option>
+                    <option value="CNY">🇨🇳 CNY</option>
+                    <option value="SGD">🇸🇬 SGD</option>
+                    <option value="AED">🇦🇪 AED</option>
+                    <option value="THB">🇹🇭 THB</option>
+                    <option value="MYR">🇲🇾 MYR</option>
+                    <option value="IDR">🇮🇩 IDR</option>
+                    <option value="KRW">🇰🇷 KRW</option>
+                    <option value="BRL">🇧🇷 BRL</option>
+                    <option value="MXN">🇲🇽 MXN</option>
+                    <option value="ZAR">🇿🇦 ZAR</option>
+                    <option value="TRY">🇹🇷 TRY</option>
+                    <option value="RUB">🇷🇺 RUB</option>
+                </select>
             </div>
         </div>
 
@@ -71,31 +69,25 @@
             </div>
         </div>
 
-        <div class="input-group">
-            <label>Travel Mode & Duration</label>
-            <div class="inline-inputs">
-                <select id="travelMode" tabindex="3">
-                    <option value="">Flight Type...</option>
-                    <option value="domestic">Domestic</option>
-                    <option value="short">Short (&lt;3hrs)</option>
-                    <option value="medium">Medium (3-7hrs)</option>
-                    <option value="long">Long (7+ hrs)</option>
-                </select>
-                <input type="number" id="duration" min="1" value="7" placeholder="Days" tabindex="4">
+        <div class="inline-inputs">
+            <div class="input-group">
+                <label>Duration (days)</label>
+                <input type="number" id="duration" min="1" value="7" tabindex="3">
+            </div>
+            <div class="input-group">
+                <label>Travelers</label>
+                <input type="number" id="people" min="1" value="2" tabindex="4">
             </div>
         </div>
 
         <div class="input-group">
-            <label>Accommodation & Travelers</label>
-            <div class="inline-inputs">
-                <select id="accommodation" tabindex="5">
-                    <option value="budget">Budget</option>
-                    <option value="moderate">Moderate</option>
-                    <option value="comfort">Comfort</option>
-                    <option value="luxury">Luxury</option>
-                </select>
-                <input type="number" id="people" min="1" value="2" placeholder="People" tabindex="6">
-            </div>
+            <label>Accommodation Style</label>
+            <select id="accommodation" tabindex="5">
+                <option value="budget">Budget - Under $50/night</option>
+                <option value="moderate">Mid-range - $50-100/night</option>
+                <option value="comfort">Comfort - $100-150/night</option>
+                <option value="luxury">Luxury - $150+/night</option>
+            </select>
         </div>
         
         <!-- Advanced Options -->
@@ -109,15 +101,20 @@
         
         <div class="advanced-section" id="advancedSection">
             <div class="advanced-content">
+                <div class="checkbox-group" style="margin-bottom: 12px;">
+                    <input type="checkbox" id="enableTravelDates" tabindex="8">
+                    <label for="enableTravelDates">Set specific travel dates</label>
+                </div>
                 <div class="input-group">
-                    <label>Travel Dates (Optional)</label>
+                    <label>Travel Dates</label>
                     <div class="date-inputs">
-                        <input type="date" id="startDate" placeholder="Start Date" tabindex="8">
-                        <input type="date" id="endDate" placeholder="End Date" tabindex="9">
+                        <input type="date" id="startDate" placeholder="Start Date" tabindex="9" disabled>
+                        <input type="date" id="endDate" placeholder="End Date" tabindex="10" disabled>
                     </div>
+                    <div class="error-message" id="dateError"></div>
                 </div>
                 <div class="checkbox-group">
-                    <input type="checkbox" id="includeDailyExpense" tabindex="10">
+                    <input type="checkbox" id="includeDailyExpense" tabindex="11">
                     <label for="includeDailyExpense">Include per-day expense breakdown</label>
                 </div>
             </div>
@@ -125,11 +122,11 @@
 
         <!-- Buttons -->
         <div class="button-grid">
-            <button class="calc-button save" onclick="saveReceipt()" tabindex="11">
+            <button class="calc-button save" onclick="saveReceipt()" tabindex="12">
                 <span class="material-icons print-icon">print</span>
                 <span>Save</span>
             </button>
-            <button class="calc-button" onclick="reset()" tabindex="12">Clear</button>
+            <button class="calc-button" onclick="reset()" tabindex="13">Clear</button>
             <button class="calc-button secondary" disabled tabindex="-1">
                 <span class="coming-soon-badge">COMING SOON</span>
                 <span>Generate Itinerary</span>
@@ -158,6 +155,14 @@
         <div class="receipt" id="receipt" onclick="event.stopPropagation()">
             <button class="receipt-close" onclick="closeReceipt()">×</button>
             <div class="receipt-content" id="receiptContent"></div>
+        </div>
+    </div>
+
+    <!-- Error Modal Overlay -->
+    <div class="receipt-overlay" id="errorOverlay" onclick="closeErrorOverlay(event)">
+        <div class="receipt error-modal" id="errorModal" onclick="event.stopPropagation()">
+            <button class="receipt-close" onclick="closeError()">×</button>
+            <div class="receipt-content" id="errorContent"></div>
         </div>
     </div>
 

@@ -499,6 +499,9 @@ function formatCurrency(amount, currency) {
 }
 
 function updateDisplay() {
+    // Always update accommodation labels when currency changes
+    updateAccommodationLabels();
+    
     if (lastCalculation) {
         const currency = document.getElementById('currency').value;
         const { flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense } = lastCalculation;
@@ -543,23 +546,56 @@ function updateDisplay() {
     }
 }
 
+// Update accommodation options based on currency
+function updateAccommodationLabels() {
+    const currency = document.getElementById('currency').value;
+    const symbol = currencySymbols[currency];
+    const rate = exchangeRates[currency];
+    
+    const accommodationSelect = document.getElementById('accommodation');
+    const selectedValue = accommodationSelect.value;
+    
+    // Price ranges in USD
+    const ranges = {
+        budget: [0, 50],
+        moderate: [50, 100],
+        comfort: [100, 150],
+        luxury: [150, 999999]
+    };
+    
+    // Update options with converted prices
+    accommodationSelect.innerHTML = `
+        <option value="budget">Budget - Under ${symbol}${Math.round(50 * rate)}/night</option>
+        <option value="moderate">Mid-range - ${symbol}${Math.round(50 * rate)}-${Math.round(100 * rate)}/night</option>
+        <option value="comfort">Comfort - ${symbol}${Math.round(100 * rate)}-${Math.round(150 * rate)}/night</option>
+        <option value="luxury">Luxury - ${symbol}${Math.round(150 * rate)}+/night</option>
+    `;
+    
+    // Restore selected value
+    accommodationSelect.value = selectedValue;
+}
+
 function calculate() {
     const source = document.getElementById('source').value;
     const destination = document.getElementById('destination').value;
-    const travelMode = document.getElementById('travelMode').value;
     const duration = parseInt(document.getElementById('duration').value) || 0;
     const people = parseInt(document.getElementById('people').value) || 1;
     const accommodation = document.getElementById('accommodation').value;
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
+    const enableTravelDates = document.getElementById('enableTravelDates').checked;
+    const startDate = enableTravelDates ? document.getElementById('startDate').value : '';
+    const endDate = enableTravelDates ? document.getElementById('endDate').value : '';
     const currency = document.getElementById('currency').value;
     const includeDailyExpense = document.getElementById('includeDailyExpense').checked;
+    const errorDiv = document.getElementById('dateError');
+    
+    // Clear previous errors
+    errorDiv.textContent = '';
 
-    // Validate dates - both must be provided or both must be empty
-    if ((startDate && !endDate) || (!startDate && endDate)) {
-        alert('Please provide both start date and end date, or leave both empty.');
+    // Validate dates - both must be provided if checkbox is enabled
+    if (enableTravelDates && (!startDate || !endDate)) {
+        errorDiv.textContent = '⚠ Please select both start and end dates';
         // Show error state in display with Material Icons robot
-        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b;">ERROR</div>';
+        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b; animation: glitch 0.3s infinite;">ERROR</div>';
         document.getElementById('breakdown').innerHTML = '';
         document.getElementById('perPerson').textContent = '';
         lastCalculation = null;
@@ -567,37 +603,57 @@ function calculate() {
     }
     
     // Validate that start and end dates are not the same
-    if (startDate && endDate && startDate === endDate) {
-        alert('Start date and end date cannot be the same. Please select different dates.');
+    if (enableTravelDates && startDate && endDate && startDate === endDate) {
+        errorDiv.textContent = '⚠ Start and end dates must be different';
         // Show error state in display with Material Icons robot
-        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b;">ERROR</div>';
+        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b; animation: glitch 0.3s infinite;">ERROR</div>';
         document.getElementById('breakdown').innerHTML = '';
         document.getElementById('perPerson').textContent = '';
         lastCalculation = null;
         return;
     }
+    
+    // Check if end date is before start date
+    if (enableTravelDates && startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        if (end < start) {
+            errorDiv.textContent = '⚠ End date cannot be before start date';
+            // Show error state in display
+            document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b; animation: glitch 0.3s infinite;">ERROR</div>';
+            document.getElementById('breakdown').innerHTML = '';
+            document.getElementById('perPerson').textContent = '';
+            lastCalculation = null;
+            return;
+        }
+    }
 
-    if (!destination || !travelMode || duration < 1) {
+    if (!destination || duration < 1) {
         return;
     }
     
     const region = getRegionForDestination(destination);
-    const seasonalMultiplier = getSeasonalMultiplier(startDate, endDate);
+    const seasonalMultiplier = enableTravelDates ? getSeasonalMultiplier(startDate, endDate) : 1;
 
-    // Smart flight type estimation
-    let actualFlightType = travelMode;
-    
-    // If user provided both source and destination, try to estimate
+    // Auto-determine flight type from source and destination
+    let travelMode = 'medium'; // default
     if (source && destination) {
         const estimated = estimateFlightType(source, destination);
         if (estimated) {
-            actualFlightType = estimated;
-            // Update the dropdown to show the estimated value
-            document.getElementById('travelMode').value = estimated;
+            travelMode = estimated;
+        }
+    } else if (!source && destination) {
+        // If no source, estimate based on destination region
+        const destRegion = getRegionForDestination(destination);
+        if (destRegion === 'budget' || destRegion === 'moderate') {
+            travelMode = 'short';
+        } else {
+            travelMode = 'medium';
         }
     }
 
-    const flightCost = flightCosts[actualFlightType] * people * seasonalMultiplier;
+    const flightCost = flightCosts[travelMode] * people * seasonalMultiplier;
     const nights = Math.max(duration - 1, 1);
     const accommodationCost = accommodationCosts[accommodation][region] * nights * seasonalMultiplier;
     const mealCost = mealCosts[region] * duration * people;
@@ -613,13 +669,16 @@ function calculate() {
 function reset() {
     document.getElementById('source').value = '';
     document.getElementById('destination').value = '';
-    document.getElementById('travelMode').value = '';
     document.getElementById('duration').value = '7';
     document.getElementById('people').value = '2';
     document.getElementById('accommodation').value = 'budget';
+    document.getElementById('enableTravelDates').checked = false;
     document.getElementById('startDate').value = '';
     document.getElementById('endDate').value = '';
+    document.getElementById('startDate').disabled = true;
+    document.getElementById('endDate').disabled = true;
     document.getElementById('includeDailyExpense').checked = false;
+    document.getElementById('dateError').textContent = '';
     
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
@@ -633,7 +692,7 @@ function reset() {
 
 function saveReceipt() {
     if (!lastCalculation) {
-        alert('Please enter trip details first!');
+        showError('No Calculation Found', 'Please enter trip details and calculate before saving.');
         return;
     }
     
@@ -738,6 +797,48 @@ function closeReceiptOverlay(event) {
     }
 }
 
+function showError(title, message) {
+    const errorContent = document.getElementById('errorContent');
+    
+    errorContent.innerHTML = `
+        <div class="receipt-header">
+            <div class="receipt-title">ERROR</div>
+            <div style="font-size: 12px; color: #ff4444; margin-top: 5px;">${title}</div>
+        </div>
+        <div style="margin: 15px 0; text-align: center;">
+            <span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span>
+        </div>
+        <div style="text-align: center; color: #666; font-size: 13px; line-height: 1.6;">
+            ${message}
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="closeError()" style="
+                padding: 10px 30px;
+                background: #ff4444;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-family: 'Courier New', monospace;
+                font-size: 13px;
+                font-weight: bold;
+            ">OK</button>
+        </div>
+    `;
+    
+    document.getElementById('errorOverlay').classList.add('show');
+}
+
+function closeError() {
+    document.getElementById('errorOverlay').classList.remove('show');
+}
+
+function closeErrorOverlay(event) {
+    if (event.target.id === 'errorOverlay') {
+        closeError();
+    }
+}
+
 function generateItinerary() {
     const source = document.getElementById('source').value;
     const destination = document.getElementById('destination').value;
@@ -814,13 +915,12 @@ function syncDuration() {
 }
 
 document.querySelectorAll('input, select').forEach(element => {
-    if (element.id !== 'currency') {
+    if (element.id !== 'currency' && element.id !== 'duration' && element.id !== 'people') {
         element.addEventListener('change', () => {
             const destination = document.getElementById('destination').value;
-            const travelMode = document.getElementById('travelMode').value;
             const duration = parseInt(document.getElementById('duration').value) || 0;
             
-            if (destination && travelMode && duration > 0) {
+            if (destination && duration > 0) {
                 calculate();
             }
         });
@@ -828,15 +928,45 @@ document.querySelectorAll('input, select').forEach(element => {
         if (element.type === 'text' || element.type === 'number') {
             element.addEventListener('input', () => {
                 const destination = document.getElementById('destination').value;
-                const travelMode = document.getElementById('travelMode').value;
                 const duration = parseInt(document.getElementById('duration').value) || 0;
                 
-                if (destination && travelMode && duration > 0) {
+                if (destination && duration > 0) {
                     calculate();
                 }
             });
         }
     }
+});
+
+// Add specific listeners for duration and people to trigger calculation
+document.getElementById('duration').addEventListener('change', function() {
+    const val = parseInt(this.value);
+    if (val < 1 || isNaN(val)) {
+        this.value = 1;
+    }
+    
+    // Update end date if travel dates are enabled
+    const enableTravelDates = document.getElementById('enableTravelDates').checked;
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    
+    if (enableTravelDates && startDateInput.value) {
+        const duration = parseInt(this.value) || 7;
+        const start = new Date(startDateInput.value);
+        const end = new Date(start);
+        end.setDate(start.getDate() + duration - 1); // duration includes start day
+        endDateInput.value = end.toISOString().split('T')[0];
+    }
+    
+    calculate();
+});
+
+document.getElementById('people').addEventListener('change', () => {
+    const val = parseInt(document.getElementById('people').value);
+    if (val < 1 || isNaN(val)) {
+        document.getElementById('people').value = 1;
+    }
+    calculate();
 });
 
 // Keyboard shortcuts
@@ -859,12 +989,113 @@ document.addEventListener('keydown', function(e) {
     }
     
     if (e.key === 'Escape') {
-        const overlay = document.getElementById('receiptOverlay');
-        if (overlay.classList.contains('show')) {
+        const receiptOverlay = document.getElementById('receiptOverlay');
+        const errorOverlay = document.getElementById('errorOverlay');
+        
+        if (receiptOverlay.classList.contains('show')) {
             closeReceipt();
+        } else if (errorOverlay.classList.contains('show')) {
+            closeError();
         }
     }
 });
 
-// Initialize autocomplete
+// Event listeners for form validation and date handling
+// (duration and people validation handled in initializeSuffixInputs)
+
+// Enable/disable travel dates based on checkbox
+document.getElementById('enableTravelDates').addEventListener('change', function() {
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const errorDiv = document.getElementById('dateError');
+    
+    if (this.checked) {
+        startDateInput.disabled = false;
+        endDateInput.disabled = false;
+        
+        // If no dates set, auto-set based on current duration
+        if (!startDateInput.value) {
+            const today = new Date();
+            startDateInput.value = today.toISOString().split('T')[0];
+            
+            // Auto-calculate end date based on duration
+            const duration = parseInt(document.getElementById('duration').value) || 7;
+            const endDate = new Date(today);
+            endDate.setDate(today.getDate() + duration - 1); // duration includes start day
+            endDateInput.value = endDate.toISOString().split('T')[0];
+        }
+    } else {
+        startDateInput.disabled = true;
+        endDateInput.disabled = true;
+        startDateInput.value = '';
+        endDateInput.value = '';
+        errorDiv.textContent = '';
+        calculate();
+    }
+});
+
+// Date change handlers  
+document.getElementById('startDate').addEventListener('change', function() {
+    const startDate = this.value;
+    const endDateInput = document.getElementById('endDate');
+    const duration = parseInt(document.getElementById('duration').value) || 7;
+    
+    if (startDate) {
+        // Auto-calculate end date based on duration
+        const start = new Date(startDate);
+        const end = new Date(start);
+        end.setDate(start.getDate() + duration - 1); // duration includes start day
+        endDateInput.value = end.toISOString().split('T')[0];
+        
+        document.getElementById('dateError').textContent = '';
+        calculate();
+        
+        // Close the date picker
+        this.blur();
+    }
+});
+
+document.getElementById('endDate').addEventListener('change', function() {
+    syncDuration();
+    
+    // Close the date picker
+    this.blur();
+});
+
+function syncDuration() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const errorDiv = document.getElementById('dateError');
+    
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        // Check if end date is before start date
+        if (end < start) {
+            errorDiv.textContent = '⚠ End date cannot be before start date';
+            return;
+        }
+        
+        errorDiv.textContent = '';
+        
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        
+        if (diffDays > 0) {
+            document.getElementById('duration').value = diffDays;
+            calculate();
+        }
+    }
+}
+
+function setTodayAsMinDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('startDate').setAttribute('min', today);
+    document.getElementById('endDate').setAttribute('min', today);
+}
+
+// Initialize
+setTodayAsMinDate();
+updateAccommodationLabels();
 setupAutocomplete();
