@@ -516,7 +516,7 @@ function updateDisplay() {
                 <span>${formatCurrency(flightCost, currency)}</span>
             </div>
             <div class="display-breakdown-item">
-                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">hotel</span> Accommodation (${nights} nights):</span>
+                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">hotel</span> Stay (${nights} nights):</span>
                 <span>${formatCurrency(accommodationCost, currency)}</span>
             </div>
             <div class="display-breakdown-item">
@@ -524,7 +524,7 @@ function updateDisplay() {
                 <span>${formatCurrency(mealCost, currency)}</span>
             </div>
             <div class="display-breakdown-item">
-                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">local_activity</span> Activities & Transport:</span>
+                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">local_activity</span> Local expenses:</span>
                 <span>${formatCurrency(activityCost, currency)}</span>
             </div>
         `;
@@ -734,7 +734,7 @@ function saveReceipt() {
             <span>${formatCurrency(flightCost, currency)}</span>
         </div>
         <div class="receipt-item">
-            <span>Accommodation (${nights}n):</span>
+            <span>Stay (${nights}n):</span>
             <span>${formatCurrency(accommodationCost, currency)}</span>
         </div>
         <div class="receipt-item">
@@ -742,7 +742,7 @@ function saveReceipt() {
             <span>${formatCurrency(mealCost, currency)}</span>
         </div>
         <div class="receipt-item">
-            <span>Activities:</span>
+            <span>Local expenses:</span>
             <span>${formatCurrency(activityCost, currency)}</span>
         </div>
     `;
