@@ -192,6 +192,19 @@ body {
         padding: 12px;
     }
 
+    /* Reduce display font sizes for small screens */
+    .display-total {
+        font-size: 28px;
+    }
+
+    .display-breakdown {
+        font-size: 11px;
+    }
+
+    .per-person {
+        font-size: 12px;
+    }
+
     /* Hide background receipt stack on mobile */
     .receipt-stack-background {
         display: none;
@@ -237,6 +250,19 @@ body {
     input[type="number"],
     input[type="date"],
     select {
+        font-size: 13px;
+    }
+
+    /* Adjust display font sizes for medium screens */
+    .display-total {
+        font-size: 32px;
+    }
+
+    .display-breakdown {
+        font-size: 12px;
+    }
+
+    .per-person {
         font-size: 13px;
     }
 

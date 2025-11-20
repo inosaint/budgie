@@ -540,9 +540,9 @@ function updateDisplay() {
         }
         
         document.getElementById('breakdown').innerHTML = breakdownHTML;
-        
+
         const perPersonCost = totalCost / people;
-        document.getElementById('perPerson').textContent = `${formatCurrency(perPersonCost, currency)} per person`;
+        document.getElementById('perPerson').innerHTML = `${formatCurrency(perPersonCost, currency)} per person`;
     }
 }
 
