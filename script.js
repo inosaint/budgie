@@ -619,14 +619,12 @@ function calculate() {
     }
 
     // Only calculate if both source and destination are provided
-    if (!source || !destination || duration < 1) {
+    if (!source || !destination || !source.trim() || !destination.trim() || duration < 1) {
         // Clear display if destinations are not complete
-        if (!source || !destination) {
-            document.getElementById('totalCost').textContent = '₹0';
-            document.getElementById('breakdown').innerHTML = '';
-            document.getElementById('perPerson').textContent = '';
-            lastCalculation = null;
-        }
+        document.getElementById('totalCost').textContent = '₹0';
+        document.getElementById('breakdown').innerHTML = '';
+        document.getElementById('perPerson').textContent = '';
+        lastCalculation = null;
         return;
     }
     
@@ -1023,18 +1021,6 @@ document.getElementById('enableTravelDates').addEventListener('change', function
     if (this.checked) {
         startDateInput.disabled = false;
         endDateInput.disabled = false;
-        
-        // If no dates set, auto-set based on current duration
-        if (!startDateInput.value) {
-            const today = new Date();
-            startDateInput.value = today.toISOString().split('T')[0];
-            
-            // Auto-calculate end date based on duration
-            const duration = parseInt(document.getElementById('duration').value) || 7;
-            const endDate = new Date(today);
-            endDate.setDate(today.getDate() + duration - 1); // duration includes start day
-            endDateInput.value = endDate.toISOString().split('T')[0];
-        }
     } else {
         startDateInput.disabled = true;
         endDateInput.disabled = true;
