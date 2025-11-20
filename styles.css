@@ -60,8 +60,8 @@ body {
 
 /* Header */
 .calculator-header {
-    padding: 16px 15px 12px 15px;
-    margin-bottom: 25px;
+    padding: 8px 12px 8px 12px;
+    margin-bottom: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -74,55 +74,45 @@ body {
 }
 
 .budgie-text {
-    color: #00aa55;
-    font-size: 40px;
-    font-weight: 700;
-    letter-spacing: -2px;
+    color: #555;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
     font-family: 'Courier New', 'Courier', monospace;
     text-transform: uppercase;
-    text-shadow: 
-        -5px -5px 0 white,
-        5px -5px 0 white,
-        -5px 5px 0 white,
-        5px 5px 0 white,
-        -5px 0 0 white,
-        5px 0 0 white,
-        0 -5px 0 white,
-        0 5px 0 white,
-        -4px -4px 0 white,
-        4px -4px 0 white,
-        -4px 4px 0 white,
-        4px 4px 0 white;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    opacity: 0.7;
 }
 
 /* Currency Selector in Header */
-.currency-selector-header {
+.currency-selector-header,
+.currency-selector-top {
     display: flex;
     align-items: center;
     flex-shrink: 0;
 }
 
-.currency-selector-header select {
-    padding: 8px 26px 8px 8px;
+.currency-selector-header select,
+.currency-selector-top select {
+    padding: 6px 22px 6px 6px;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
+    border-radius: 4px;
     color: #aaa;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
     cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23aaa' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 8px center;
+    background-position: right 6px center;
     transition: all 0.2s;
     font-family: 'Courier New', 'Courier', monospace;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-    min-width: 70px;
+    min-width: 65px;
 }
 
-.currency-selector-header select:hover {
+.currency-selector-header select:hover,
+.currency-selector-top select:hover {
     background: rgba(0, 0, 0, 0.3);
     border-color: rgba(255, 255, 255, 0.15);
 }
@@ -149,11 +139,12 @@ body {
     }
 
     .budgie-text {
-        font-size: 28px;
-        letter-spacing: -1px;
+        font-size: 10px;
+        letter-spacing: 0.5px;
     }
 
-    .currency-selector-header select {
+    .currency-selector-header select,
+    .currency-selector-top select {
         font-size: 9px;
         padding: 5px 20px 5px 5px;
         min-width: 55px;
@@ -218,11 +209,12 @@ body {
     }
 
     .budgie-text {
-        font-size: 32px;
-        letter-spacing: -1px;
+        font-size: 11px;
+        letter-spacing: 1px;
     }
 
-    .currency-selector-header select {
+    .currency-selector-header select,
+    .currency-selector-top select {
         font-size: 10px;
         padding: 6px 22px 6px 6px;
         min-width: 60px;
