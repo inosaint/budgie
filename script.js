@@ -781,7 +781,10 @@ function saveReceipt() {
     
     document.getElementById('receiptContent').innerHTML = receiptHTML;
     document.getElementById('receiptOverlay').classList.add('show');
-    
+
+    // Add receipt to background stack
+    addReceiptToBackground(receiptHTML);
+
     setTimeout(() => {
         downloadReceiptAsImage();
     }, 500);
@@ -1093,6 +1096,61 @@ function setTodayAsMinDate() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('startDate').setAttribute('min', today);
     document.getElementById('endDate').setAttribute('min', today);
+}
+
+// Background Receipt Stack Management
+let receiptCounter = 0;
+
+function addReceiptToBackground(receiptHTML) {
+    const container = document.getElementById('receiptStackBackground');
+    const receiptId = `stacked-receipt-${receiptCounter++}`;
+
+    // Create receipt element
+    const receiptDiv = document.createElement('div');
+    receiptDiv.className = 'stacked-receipt';
+    receiptDiv.id = receiptId;
+
+    // Random positioning (scattered across viewport)
+    const randomX = Math.random() * (window.innerWidth - 320);
+    const randomY = Math.random() * (window.innerHeight - 400);
+    const randomRotation = (Math.random() - 0.5) * 15; // -7.5 to 7.5 degrees
+
+    receiptDiv.style.left = `${randomX}px`;
+    receiptDiv.style.top = `${randomY}px`;
+    receiptDiv.style.transform = `rotate(${randomRotation}deg)`;
+
+    // Add content and delete button
+    receiptDiv.innerHTML = `
+        <button class="stacked-receipt-delete" onclick="deleteStackedReceipt('${receiptId}', event)">×</button>
+        <div class="stacked-receipt-content">${receiptHTML}</div>
+    `;
+
+    // Add click handler to view in modal
+    receiptDiv.addEventListener('click', function(e) {
+        if (!e.target.classList.contains('stacked-receipt-delete')) {
+            viewStackedReceipt(receiptHTML);
+        }
+    });
+
+    container.appendChild(receiptDiv);
+}
+
+function viewStackedReceipt(receiptHTML) {
+    document.getElementById('receiptContent').innerHTML = receiptHTML;
+    document.getElementById('receiptOverlay').classList.add('show');
+}
+
+function deleteStackedReceipt(receiptId, event) {
+    event.stopPropagation();
+    const receipt = document.getElementById(receiptId);
+    if (receipt) {
+        receipt.style.transition = 'all 0.3s ease';
+        receipt.style.opacity = '0';
+        receipt.style.transform = receipt.style.transform + ' scale(0.8)';
+        setTimeout(() => {
+            receipt.remove();
+        }, 300);
+    }
 }
 
 // Initialize
