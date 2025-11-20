@@ -490,11 +490,11 @@ function getSeasonalMultiplier(startDate, endDate) {
 function formatCurrency(amount, currency) {
     const symbol = currencySymbols[currency];
     const converted = amount * exchangeRates[currency];
-    
+
     if (currency === 'JPY' || currency === 'KRW' || currency === 'IDR') {
-        return `${symbol}${Math.round(converted).toLocaleString()}`;
+        return `<span class="currency-symbol">${symbol}</span>${Math.round(converted).toLocaleString()}`;
     } else {
-        return `${symbol}${converted.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        return `<span class="currency-symbol">${symbol}</span>${converted.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
     }
 }
 
@@ -506,7 +506,7 @@ function updateDisplay() {
         const currency = document.getElementById('currency').value;
         const { flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense } = lastCalculation;
         
-        document.getElementById('totalCost').textContent = formatCurrency(totalCost, currency);
+        document.getElementById('totalCost').innerHTML = formatCurrency(totalCost, currency);
         
         const nights = Math.max(duration - 1, 1);
         
@@ -621,7 +621,7 @@ function calculate() {
     // Only calculate if both source and destination are provided
     if (!source || !destination || !source.trim() || !destination.trim() || duration < 1) {
         // Clear display if destinations are not complete
-        document.getElementById('totalCost').textContent = '₹0';
+        document.getElementById('totalCost').innerHTML = '<span class="currency-symbol">₹</span>0';
         document.getElementById('breakdown').innerHTML = '';
         document.getElementById('perPerson').textContent = '';
         lastCalculation = null;

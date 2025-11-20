@@ -360,6 +360,14 @@ body {
     z-index: 1;
 }
 
+/* Fix currency symbol sizing (especially rupee symbol) */
+.currency-symbol {
+    font-size: 0.92em;
+    display: inline-block;
+    vertical-align: baseline;
+    line-height: 1;
+}
+
 .display-breakdown {
     color: #88ff88;
     font-size: 13px;
