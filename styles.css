@@ -1033,18 +1033,25 @@ input[type="date"] {
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.2),
         inset 0 0 50px rgba(0, 0, 0, 0.03);
-    cursor: pointer;
+    cursor: move;
     pointer-events: all;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, filter 0.3s ease;
     opacity: 0.85;
     filter: contrast(0.95) brightness(0.98);
+    user-select: none;
 }
 
 .stacked-receipt:hover {
     opacity: 1;
-    transform: scale(1.05) !important;
     z-index: 10;
     filter: contrast(1) brightness(1);
+}
+
+.stacked-receipt.dragging {
+    opacity: 0.6;
+    z-index: 1000;
+    cursor: grabbing;
+    transition: none;
 }
 
 .stacked-receipt-delete {
@@ -1150,34 +1157,38 @@ input[type="date"] {
 .mobile-receipt-button {
     display: none;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(145deg, #3a3a3a, #252525);
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
     padding: 12px 20px;
-    border-top: 2px solid #00ff88;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     z-index: 200;
     cursor: pointer;
     transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.mobile-receipt-button:active {
+    transform: translateX(-50%) scale(0.95);
 }
 
 .mobile-receipt-button-content {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    max-width: 500px;
-    margin: 0 auto;
+    gap: 8px;
 }
 
 .mobile-receipt-button-text {
-    color: #00ff88;
+    color: #333;
     font-family: 'Courier New', monospace;
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .mobile-receipt-count {
@@ -1185,7 +1196,7 @@ input[type="date"] {
     color: #1a1a1a;
     border-radius: 12px;
     padding: 2px 8px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
 }
 
@@ -1199,7 +1210,7 @@ input[type="date"] {
     max-height: 70vh;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
     z-index: 300;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1211,37 +1222,59 @@ input[type="date"] {
 }
 
 .mobile-receipt-panel-header {
-    padding: 16px 20px;
-    border-bottom: 2px solid #e0e0e0;
+    padding: 20px 20px 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    background: #f5f5f5;
+    background: white;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
+    position: relative;
+}
+
+/* Drag handle indicator */
+.mobile-receipt-panel-header::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: #d0d0d0;
+    border-radius: 2px;
 }
 
 .mobile-receipt-panel-title {
     font-family: 'Courier New', monospace;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
-    color: #1a1a1a;
+    color: #333;
+    margin-top: 8px;
 }
 
 .mobile-receipt-panel-close {
-    background: #ff4444;
-    color: white;
+    background: #f5f5f5;
+    color: #666;
     border: none;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1;
-    font-weight: bold;
+    font-weight: normal;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: 12px;
+    transition: all 0.2s;
+}
+
+.mobile-receipt-panel-close:active {
+    background: #e8e8e8;
+    transform: scale(0.95);
 }
 
 .mobile-receipt-list {
@@ -1272,8 +1305,8 @@ input[type="date"] {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: #ff4444;
-    color: white;
+    background: #f5f5f5;
+    color: #999;
     border: none;
     border-radius: 50%;
     width: 24px;
@@ -1281,11 +1314,18 @@ input[type="date"] {
     cursor: pointer;
     font-size: 14px;
     line-height: 1;
-    font-weight: bold;
+    font-weight: normal;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1;
+    transition: all 0.2s;
+}
+
+.mobile-receipt-item-delete:active {
+    background: #e8e8e8;
+    color: #666;
+    transform: scale(0.95);
 }
 
 .mobile-receipt-empty {

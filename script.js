@@ -629,7 +629,15 @@ function calculate() {
         }
     }
 
-    if (!destination || duration < 1) {
+    // Only calculate if both source and destination are provided
+    if (!source || !destination || duration < 1) {
+        // Clear display if destinations are not complete
+        if (!source || !destination) {
+            document.getElementById('totalCost').textContent = '₹0';
+            document.getElementById('breakdown').innerHTML = '';
+            document.getElementById('perPerson').textContent = '';
+            lastCalculation = null;
+        }
         return;
     }
     
@@ -1184,14 +1192,64 @@ function addReceiptToBackground(receiptHTML) {
         <div class="stacked-receipt-content">${receiptHTML}</div>
     `;
 
-    // Add click handler to view in modal
-    receiptDiv.addEventListener('click', function(e) {
-        if (!e.target.classList.contains('stacked-receipt-delete')) {
+    // Make receipt draggable
+    makeDraggable(receiptDiv, receiptHTML);
+
+    container.appendChild(receiptDiv);
+}
+
+// Make receipts draggable on desktop
+function makeDraggable(element, receiptHTML) {
+    let isDragging = false;
+    let startX, startY;
+    let initialLeft, initialTop;
+    let hasMoved = false;
+
+    element.addEventListener('mousedown', function(e) {
+        // Ignore if clicking delete button
+        if (e.target.classList.contains('stacked-receipt-delete')) {
+            return;
+        }
+
+        isDragging = true;
+        hasMoved = false;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = element.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        element.classList.add('dragging');
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+
+        // Mark as moved if dragged more than 5px
+        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+            hasMoved = true;
+        }
+
+        element.style.left = (initialLeft + deltaX) + 'px';
+        element.style.top = (initialTop + deltaY) + 'px';
+    });
+
+    document.addEventListener('mouseup', function(e) {
+        if (!isDragging) return;
+
+        isDragging = false;
+        element.classList.remove('dragging');
+
+        // If it was just a click (not dragged), open the modal
+        if (!hasMoved && !e.target.classList.contains('stacked-receipt-delete')) {
             viewStackedReceipt(receiptHTML);
         }
     });
-
-    container.appendChild(receiptDiv);
 }
 
 // Mobile Receipt Management
