@@ -169,6 +169,31 @@
         </div>
     </div>
 
+    <!-- Mobile Receipt Viewer Button -->
+    <div class="mobile-receipt-button" id="mobileReceiptButton" onclick="openMobileReceiptPanel()">
+        <div class="mobile-receipt-button-content">
+            <div class="mobile-receipt-button-text">
+                <span class="material-icons" style="font-size: 18px;">receipt_long</span>
+                <span>Saved Receipts</span>
+            </div>
+            <div class="mobile-receipt-count" id="mobileReceiptCount">0</div>
+        </div>
+    </div>
+
+    <!-- Mobile Receipt Panel -->
+    <div class="mobile-receipt-panel" id="mobileReceiptPanel">
+        <div class="mobile-receipt-panel-header">
+            <div class="mobile-receipt-panel-title">Saved Receipts</div>
+            <button class="mobile-receipt-panel-close" onclick="closeMobileReceiptPanel()">×</button>
+        </div>
+        <div class="mobile-receipt-list" id="mobileReceiptList">
+            <div class="mobile-receipt-empty" id="mobileReceiptEmpty">
+                <span class="material-icons" style="font-size: 48px; opacity: 0.3;">receipt</span>
+                <p>No receipts saved yet</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="script.js"></script>
 </body>

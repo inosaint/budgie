@@ -1098,11 +1098,23 @@ function setTodayAsMinDate() {
     document.getElementById('endDate').setAttribute('min', today);
 }
 
-// Background Receipt Stack Management
+// Receipt Stack Management
 let receiptCounter = 0;
-const MAX_RECEIPTS = 15; // Upper limit for background receipts
+const MAX_RECEIPTS = 15; // Upper limit for receipts
+let mobileReceipts = []; // Store mobile receipts separately
+
+function isMobile() {
+    return window.innerWidth <= 480;
+}
 
 function addReceiptToBackground(receiptHTML) {
+    // On mobile, use the mobile receipt panel instead
+    if (isMobile()) {
+        addMobileReceipt(receiptHTML);
+        return;
+    }
+
+    // Desktop: Add to background stack
     const container = document.getElementById('receiptStackBackground');
     const receiptId = `stacked-receipt-${receiptCounter++}`;
 
@@ -1117,34 +1129,11 @@ function addReceiptToBackground(receiptHTML) {
     receiptDiv.className = 'stacked-receipt';
     receiptDiv.id = receiptId;
 
-    // Detect mobile
-    const isMobile = window.innerWidth < 768;
-    const receiptWidth = isMobile ? 200 : 280;
-    const receiptHeight = isMobile ? 280 : 400;
+    const receiptWidth = 280;
 
     // Random positioning (scattered across viewport)
-    // On mobile, position in corners/edges to avoid blocking calculator
-    let randomX, randomY;
-
-    if (isMobile) {
-        // Mobile: position in corners or edges
-        const positions = [
-            { x: 10, y: 10 }, // Top left
-            { x: window.innerWidth - receiptWidth - 10, y: 10 }, // Top right
-            { x: 10, y: window.innerHeight - receiptHeight - 10 }, // Bottom left
-            { x: window.innerWidth - receiptWidth - 10, y: window.innerHeight - receiptHeight - 10 }, // Bottom right
-            { x: 10, y: window.innerHeight / 2 - receiptHeight / 2 }, // Middle left
-            { x: window.innerWidth - receiptWidth - 10, y: window.innerHeight / 2 - receiptHeight / 2 } // Middle right
-        ];
-        const position = positions[Math.floor(Math.random() * positions.length)];
-        randomX = position.x + (Math.random() - 0.5) * 30; // Small random offset
-        randomY = position.y + (Math.random() - 0.5) * 30;
-    } else {
-        // Desktop: scatter across viewport
-        randomX = Math.random() * (window.innerWidth - 320);
-        randomY = Math.random() * (window.innerHeight - 400);
-    }
-
+    const randomX = Math.random() * (window.innerWidth - 320);
+    const randomY = Math.random() * (window.innerHeight - 400);
     const randomRotation = (Math.random() - 0.5) * 15; // -7.5 to 7.5 degrees
 
     // Generate unique crumple pattern using CSS variables
@@ -1172,7 +1161,6 @@ function addReceiptToBackground(receiptHTML) {
     receiptDiv.style.top = `${randomY}px`;
     receiptDiv.style.transform = `rotate(${randomRotation}deg)`;
     receiptDiv.style.width = `${receiptWidth}px`;
-    receiptDiv.style.fontSize = isMobile ? '9px' : '11px';
 
     // Apply crumple variables
     Object.entries(crumpleVars).forEach(([key, value]) => {
@@ -1193,6 +1181,90 @@ function addReceiptToBackground(receiptHTML) {
     });
 
     container.appendChild(receiptDiv);
+}
+
+// Mobile Receipt Management
+function addMobileReceipt(receiptHTML) {
+    const receiptId = `mobile-receipt-${receiptCounter++}`;
+
+    // Check if we've hit the limit
+    if (mobileReceipts.length >= MAX_RECEIPTS) {
+        mobileReceipts.shift(); // Remove oldest
+    }
+
+    mobileReceipts.push({
+        id: receiptId,
+        html: receiptHTML,
+        timestamp: Date.now()
+    });
+
+    updateMobileReceiptCount();
+    updateMobileReceiptList();
+}
+
+function updateMobileReceiptCount() {
+    const countElement = document.getElementById('mobileReceiptCount');
+    if (countElement) {
+        countElement.textContent = mobileReceipts.length;
+        // Show/hide button based on receipt count
+        const button = document.getElementById('mobileReceiptButton');
+        if (button) {
+            button.style.display = mobileReceipts.length > 0 ? 'block' : 'none';
+        }
+    }
+}
+
+function updateMobileReceiptList() {
+    const listElement = document.getElementById('mobileReceiptList');
+    const emptyElement = document.getElementById('mobileReceiptEmpty');
+
+    if (mobileReceipts.length === 0) {
+        emptyElement.style.display = 'block';
+        // Remove all receipt items
+        listElement.querySelectorAll('.mobile-receipt-item').forEach(item => item.remove());
+    } else {
+        emptyElement.style.display = 'none';
+
+        // Clear and rebuild list
+        listElement.querySelectorAll('.mobile-receipt-item').forEach(item => item.remove());
+
+        mobileReceipts.forEach((receipt, index) => {
+            const item = document.createElement('div');
+            item.className = 'mobile-receipt-item';
+            item.id = receipt.id;
+
+            item.innerHTML = `
+                <button class="mobile-receipt-item-delete" onclick="deleteMobileReceipt(${index}, event)">×</button>
+                ${receipt.html}
+            `;
+
+            item.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('mobile-receipt-item-delete')) {
+                    viewStackedReceipt(receipt.html);
+                    closeMobileReceiptPanel();
+                }
+            });
+
+            listElement.appendChild(item);
+        });
+    }
+}
+
+function deleteMobileReceipt(index, event) {
+    event.stopPropagation();
+    mobileReceipts.splice(index, 1);
+    updateMobileReceiptCount();
+    updateMobileReceiptList();
+}
+
+function openMobileReceiptPanel() {
+    const panel = document.getElementById('mobileReceiptPanel');
+    panel.classList.add('show');
+}
+
+function closeMobileReceiptPanel() {
+    const panel = document.getElementById('mobileReceiptPanel');
+    panel.classList.remove('show');
 }
 
 function viewStackedReceipt(receiptHTML) {
