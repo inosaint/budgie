@@ -1355,9 +1355,9 @@ input[type="date"] {
     font-family: 'Courier New', monospace;
 }
 
-/* Show mobile receipt button only on mobile */
+/* Mobile receipt button visibility controlled by JavaScript */
 @media (max-width: 480px) {
     .mobile-receipt-button {
-        display: block;
+        /* display controlled by JS based on receipt count */
     }
 }

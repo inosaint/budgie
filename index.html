@@ -142,17 +142,28 @@
         </div>
     </div>
 
+    <!-- Mobile Receipt Viewer Button -->
+    <div class="mobile-receipt-button" id="mobileReceiptButton" onclick="openMobileReceiptPanel()">
+        <div class="mobile-receipt-button-content">
+            <div class="mobile-receipt-button-text">
+                <span class="material-icons" style="font-size: 22px;">receipt_long</span>
+                <span>Receipt History</span>
+            </div>
+            <div class="mobile-receipt-count" id="mobileReceiptCount">0</div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <div class="footer">
         <div class="footer-content">
             <span class="footer-text">coded with</span>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Claude_AI_symbol.svg" 
-                 alt="Claude AI" 
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Claude_AI_symbol.svg"
+                 alt="Claude AI"
                  class="claude-logo">
             <span style="font-weight: 600; color: var(--text);">Claude</span>
         </div>
     </div>
-    
+
     <!-- Receipt Overlay -->
     <div class="receipt-overlay" id="receiptOverlay" onclick="closeReceiptOverlay(event)">
         <div class="receipt" id="receipt" onclick="event.stopPropagation()">
@@ -165,17 +176,6 @@
     <div class="receipt-overlay" id="errorOverlay" onclick="closeErrorOverlay(event)">
         <div class="receipt error-modal" id="errorModal" onclick="event.stopPropagation()">
             <div class="receipt-content" id="errorContent"></div>
-        </div>
-    </div>
-
-    <!-- Mobile Receipt Viewer Button -->
-    <div class="mobile-receipt-button" id="mobileReceiptButton" onclick="openMobileReceiptPanel()">
-        <div class="mobile-receipt-button-content">
-            <div class="mobile-receipt-button-text">
-                <span class="material-icons" style="font-size: 22px;">receipt_long</span>
-                <span>Receipt History</span>
-            </div>
-            <div class="mobile-receipt-count" id="mobileReceiptCount">0</div>
         </div>
     </div>
 
