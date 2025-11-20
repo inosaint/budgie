@@ -880,11 +880,22 @@ function generateItinerary() {
 
 function downloadReceiptAsImage() {
     const receipt = document.getElementById('receipt');
-    
+    const closeButton = receipt.querySelector('.receipt-close');
+
+    // Hide close button before capturing
+    if (closeButton) {
+        closeButton.style.display = 'none';
+    }
+
     html2canvas(receipt, {
         backgroundColor: '#ffffff',
         scale: 2
     }).then(canvas => {
+        // Show close button again after capturing
+        if (closeButton) {
+            closeButton.style.display = 'flex';
+        }
+
         canvas.toBlob(blob => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
