@@ -142,17 +142,87 @@ body {
     font-family: 'Courier New', 'Courier', monospace;
 }
 
-/* Responsive adjustments */
-@media (max-width: 480px) {
+/* Responsive adjustments for small phones (iPhone SE, small Android) */
+@media (max-width: 375px) {
+    .budgie-text {
+        font-size: 28px;
+        letter-spacing: -1px;
+    }
+
+    .currency-selector-header select {
+        font-size: 9px;
+        padding: 5px 20px 5px 5px;
+        min-width: 55px;
+    }
+
+    /* Stack ALL inline inputs vertically on very small screens */
+    .inline-inputs {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Stack date inputs vertically */
+    .date-inputs {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    /* Adjust calculator padding for very small screens */
+    .calculator-container {
+        padding: 18px;
+    }
+
+    /* Reduce input font size */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    /* Smaller buttons */
+    .calc-button {
+        font-size: 13px;
+        padding: 12px;
+    }
+}
+
+/* Responsive adjustments for slightly larger phones */
+@media (min-width: 376px) and (max-width: 480px) {
     .budgie-text {
         font-size: 32px;
         letter-spacing: -1px;
     }
-    
+
     .currency-selector-header select {
         font-size: 10px;
         padding: 6px 22px 6px 6px;
         min-width: 60px;
+    }
+
+    /* Stack date inputs vertically */
+    .date-inputs {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    /* Keep Duration/Travelers side-by-side if possible */
+    .inline-inputs {
+        gap: 8px;
+    }
+
+    /* Adjust calculator padding */
+    .calculator-container {
+        padding: 20px;
+    }
+
+    /* Slightly reduce input font size */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+        font-size: 13px;
     }
 }
 /* Display */
