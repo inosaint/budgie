@@ -993,7 +993,7 @@ input[type="date"] {
     pointer-events: none;
 }
 
-/* Crumpled paper texture effect */
+/* Crumpled paper texture effect - uses CSS variables for unique patterns */
 .stacked-receipt::before {
     content: '';
     position: absolute;
@@ -1002,18 +1002,18 @@ input[type="date"] {
     right: 0;
     bottom: 0;
     background-image:
-        radial-gradient(ellipse at 15% 25%, rgba(0,0,0,0.08) 0%, transparent 40%),
-        radial-gradient(ellipse at 85% 75%, rgba(0,0,0,0.06) 0%, transparent 40%),
-        radial-gradient(ellipse at 35% 85%, rgba(0,0,0,0.07) 0%, transparent 40%),
-        radial-gradient(ellipse at 65% 15%, rgba(0,0,0,0.06) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 25% 60%, rgba(0,0,0,0.05) 0%, transparent 35%),
-        radial-gradient(ellipse at 75% 40%, rgba(0,0,0,0.05) 0%, transparent 35%);
+        radial-gradient(ellipse at var(--crumple-x1, 15%) var(--crumple-y1, 25%), rgba(0,0,0,0.08) 0%, transparent 40%),
+        radial-gradient(ellipse at var(--crumple-x2, 85%) var(--crumple-y2, 75%), rgba(0,0,0,0.06) 0%, transparent 40%),
+        radial-gradient(ellipse at var(--crumple-x3, 35%) var(--crumple-y3, 85%), rgba(0,0,0,0.07) 0%, transparent 40%),
+        radial-gradient(ellipse at var(--crumple-x4, 65%) var(--crumple-y4, 15%), rgba(0,0,0,0.06) 0%, transparent 40%),
+        radial-gradient(ellipse at var(--crumple-x5, 50%) var(--crumple-y5, 50%), rgba(0,0,0,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at var(--crumple-x6, 25%) var(--crumple-y6, 60%), rgba(0,0,0,0.05) 0%, transparent 35%),
+        radial-gradient(ellipse at var(--crumple-x7, 75%) var(--crumple-y7, 40%), rgba(0,0,0,0.05) 0%, transparent 35%);
     pointer-events: none;
     z-index: 1;
 }
 
-/* Additional wrinkle effect */
+/* Additional wrinkle effect - uses CSS variables for unique angles */
 .stacked-receipt::after {
     content: '';
     position: absolute;
@@ -1022,8 +1022,36 @@ input[type="date"] {
     right: 0;
     bottom: 0;
     background:
-        linear-gradient(125deg, transparent 45%, rgba(0,0,0,0.04) 50%, transparent 55%),
-        linear-gradient(65deg, transparent 45%, rgba(0,0,0,0.03) 50%, transparent 55%);
+        linear-gradient(var(--wrinkle-angle1, 125deg), transparent 45%, rgba(0,0,0,0.04) 50%, transparent 55%),
+        linear-gradient(var(--wrinkle-angle2, 65deg), transparent 45%, rgba(0,0,0,0.03) 50%, transparent 55%);
     pointer-events: none;
     z-index: 1;
+}
+
+/* Mobile optimizations for receipt stack */
+@media (max-width: 767px) {
+    .stacked-receipt {
+        width: 200px;
+        padding: 14px;
+        font-size: 9px;
+        line-height: 1.4;
+    }
+
+    .stacked-receipt-delete {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        top: 5px;
+        right: 5px;
+    }
+
+    /* Reduce opacity on mobile so they don't overwhelm */
+    .stacked-receipt {
+        opacity: 0.7;
+    }
+
+    .stacked-receipt:hover {
+        opacity: 1;
+        transform: scale(1.03) !important;
+    }
 }

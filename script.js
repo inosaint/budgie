@@ -1100,24 +1100,84 @@ function setTodayAsMinDate() {
 
 // Background Receipt Stack Management
 let receiptCounter = 0;
+const MAX_RECEIPTS = 15; // Upper limit for background receipts
 
 function addReceiptToBackground(receiptHTML) {
     const container = document.getElementById('receiptStackBackground');
     const receiptId = `stacked-receipt-${receiptCounter++}`;
+
+    // Check if we've hit the limit, remove oldest receipt
+    const existingReceipts = container.querySelectorAll('.stacked-receipt');
+    if (existingReceipts.length >= MAX_RECEIPTS) {
+        existingReceipts[0].remove(); // Remove oldest (first) receipt
+    }
 
     // Create receipt element
     const receiptDiv = document.createElement('div');
     receiptDiv.className = 'stacked-receipt';
     receiptDiv.id = receiptId;
 
+    // Detect mobile
+    const isMobile = window.innerWidth < 768;
+    const receiptWidth = isMobile ? 200 : 280;
+    const receiptHeight = isMobile ? 280 : 400;
+
     // Random positioning (scattered across viewport)
-    const randomX = Math.random() * (window.innerWidth - 320);
-    const randomY = Math.random() * (window.innerHeight - 400);
+    // On mobile, position in corners/edges to avoid blocking calculator
+    let randomX, randomY;
+
+    if (isMobile) {
+        // Mobile: position in corners or edges
+        const positions = [
+            { x: 10, y: 10 }, // Top left
+            { x: window.innerWidth - receiptWidth - 10, y: 10 }, // Top right
+            { x: 10, y: window.innerHeight - receiptHeight - 10 }, // Bottom left
+            { x: window.innerWidth - receiptWidth - 10, y: window.innerHeight - receiptHeight - 10 }, // Bottom right
+            { x: 10, y: window.innerHeight / 2 - receiptHeight / 2 }, // Middle left
+            { x: window.innerWidth - receiptWidth - 10, y: window.innerHeight / 2 - receiptHeight / 2 } // Middle right
+        ];
+        const position = positions[Math.floor(Math.random() * positions.length)];
+        randomX = position.x + (Math.random() - 0.5) * 30; // Small random offset
+        randomY = position.y + (Math.random() - 0.5) * 30;
+    } else {
+        // Desktop: scatter across viewport
+        randomX = Math.random() * (window.innerWidth - 320);
+        randomY = Math.random() * (window.innerHeight - 400);
+    }
+
     const randomRotation = (Math.random() - 0.5) * 15; // -7.5 to 7.5 degrees
 
+    // Generate unique crumple pattern using CSS variables
+    const crumpleVars = {
+        '--crumple-x1': `${Math.random() * 30 + 10}%`,
+        '--crumple-y1': `${Math.random() * 30 + 10}%`,
+        '--crumple-x2': `${Math.random() * 30 + 70}%`,
+        '--crumple-y2': `${Math.random() * 30 + 60}%`,
+        '--crumple-x3': `${Math.random() * 30 + 30}%`,
+        '--crumple-y3': `${Math.random() * 30 + 70}%`,
+        '--crumple-x4': `${Math.random() * 30 + 60}%`,
+        '--crumple-y4': `${Math.random() * 30 + 10}%`,
+        '--crumple-x5': `${Math.random() * 20 + 40}%`,
+        '--crumple-y5': `${Math.random() * 20 + 40}%`,
+        '--crumple-x6': `${Math.random() * 30 + 20}%`,
+        '--crumple-y6': `${Math.random() * 30 + 50}%`,
+        '--crumple-x7': `${Math.random() * 30 + 70}%`,
+        '--crumple-y7': `${Math.random() * 30 + 30}%`,
+        '--wrinkle-angle1': `${Math.random() * 60 + 100}deg`,
+        '--wrinkle-angle2': `${Math.random() * 60 + 40}deg`
+    };
+
+    // Apply styles
     receiptDiv.style.left = `${randomX}px`;
     receiptDiv.style.top = `${randomY}px`;
     receiptDiv.style.transform = `rotate(${randomRotation}deg)`;
+    receiptDiv.style.width = `${receiptWidth}px`;
+    receiptDiv.style.fontSize = isMobile ? '9px' : '11px';
+
+    // Apply crumple variables
+    Object.entries(crumpleVars).forEach(([key, value]) => {
+        receiptDiv.style.setProperty(key, value);
+    });
 
     // Add content and delete button
     receiptDiv.innerHTML = `
