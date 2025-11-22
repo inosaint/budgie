@@ -116,10 +116,12 @@ body {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
+    box-shadow: none;
 }
 
 .currency-select:hover {
     background: #2f2f2f;
+    box-shadow: none;
 }
 
 .currency-select:focus {
