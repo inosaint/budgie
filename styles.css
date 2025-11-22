@@ -100,8 +100,8 @@ body {
     flex-shrink: 0;
 }
 
-.currency-selector-header select,
-.currency-selector-top select {
+/* Clean currency selector - minimal styling */
+.currency-select {
     padding: 6px 8px;
     background: #2a2a2a;
     border: 1px solid #333;
@@ -112,28 +112,21 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     cursor: pointer;
-    appearance: none;
-    transition: background 0.3s;
     font-family: 'Courier New', 'Courier', monospace;
-    min-width: 55px;
 }
 
-.currency-selector-header select:hover,
-.currency-selector-top select:hover {
+.currency-select:hover {
     background: #2f2f2f;
 }
 
-.currency-selector-header select:focus,
-.currency-selector-top select:focus {
+.currency-select:focus {
     outline: none;
     border-color: #00ff88;
 }
 
-.currency-selector-header select option {
+.currency-select option {
     background: #2a2a2a;
     color: #fff;
-    padding: 8px;
-    font-family: 'Courier New', 'Courier', monospace;
 }
 
 /* Responsive adjustments for small phones (iPhone SE, small Android) */
@@ -147,11 +140,9 @@ body {
         letter-spacing: 0.5px;
     }
 
-    .currency-selector-header select,
-    .currency-selector-top select {
+    .currency-select {
         font-size: 8px;
         padding: 5px 6px;
-        min-width: 50px;
     }
 
     /* Stack ALL inline inputs vertically on very small screens */
@@ -217,11 +208,9 @@ body {
         letter-spacing: 1px;
     }
 
-    .currency-selector-header select,
-    .currency-selector-top select {
+    .currency-select {
         font-size: 9px;
         padding: 6px 8px;
-        min-width: 55px;
     }
 
     /* Stack date inputs vertically */
