@@ -84,7 +84,7 @@ body {
 
 .budgie-text {
     color: #555;
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 1px;
     font-family: 'Science Gothic', Arial, Helvetica, sans-serif;
@@ -105,35 +105,35 @@ body {
 .currency-selector-top::after {
     content: '▼';
     position: absolute;
-    right: 12px;
+    right: 6px;
     color: #666;
-    font-size: 10px;
+    font-size: 8px;
     pointer-events: none;
 }
 
 .currency-selector-header select,
 .currency-selector-top select {
-    padding: 12px 35px 12px 20px;
-    background: #2a2a2a;
+    padding: 6px 20px 6px 8px;
+    background: transparent;
     border: 1px solid #333;
-    border-radius: 8px;
+    border-radius: 6px;
     color: #888;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 9px;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     cursor: pointer;
     appearance: none;
-    transition: background 0.3s;
+    transition: border-color 0.3s;
     font-family: 'Courier New', 'Courier', monospace;
-    min-width: 65px;
+    min-width: 55px;
     transform: translateZ(0);
     backface-visibility: hidden;
 }
 
 .currency-selector-header select:hover,
 .currency-selector-top select:hover {
-    background: #2f2f2f;
+    border-color: #444;
 }
 
 .currency-selector-header select:focus,
@@ -156,15 +156,15 @@ body {
     }
 
     .budgie-text {
-        font-size: 10px;
+        font-size: 14px;
         letter-spacing: 0.5px;
     }
 
     .currency-selector-header select,
     .currency-selector-top select {
-        font-size: 9px;
-        padding: 10px 30px 10px 15px;
-        min-width: 55px;
+        font-size: 8px;
+        padding: 5px 18px 5px 6px;
+        min-width: 50px;
     }
 
     /* Stack ALL inline inputs vertically on very small screens */
@@ -226,15 +226,15 @@ body {
     }
 
     .budgie-text {
-        font-size: 11px;
+        font-size: 15px;
         letter-spacing: 1px;
     }
 
     .currency-selector-header select,
     .currency-selector-top select {
-        font-size: 10px;
-        padding: 11px 32px 11px 18px;
-        min-width: 60px;
+        font-size: 9px;
+        padding: 6px 20px 6px 8px;
+        min-width: 55px;
     }
 
     /* Stack date inputs vertically */
