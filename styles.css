@@ -113,7 +113,7 @@ body {
     font-weight: 500;
     cursor: pointer;
     appearance: none;
-    transition: background-color 0.2s, border-color 0.2s;
+    transition: background-color 0.3s;
     font-family: 'Courier New', 'Courier', monospace;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
     min-width: 65px;
@@ -123,8 +123,7 @@ body {
 
 .currency-selector-header select:hover,
 .currency-selector-top select:hover {
-    background-color: rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(0, 0, 0, 0.25);
 }
 
 .currency-selector-header select:focus {
