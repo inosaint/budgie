@@ -98,22 +98,11 @@ body {
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    position: relative;
-}
-
-.currency-selector-header::after,
-.currency-selector-top::after {
-    content: '▼';
-    position: absolute;
-    right: 6px;
-    color: #666;
-    font-size: 8px;
-    pointer-events: none;
 }
 
 .currency-selector-header select,
 .currency-selector-top select {
-    padding: 6px 20px 6px 8px;
+    padding: 6px 8px;
     background: transparent;
     border: 1px solid #333;
     border-radius: 6px;
@@ -163,7 +152,7 @@ body {
     .currency-selector-header select,
     .currency-selector-top select {
         font-size: 8px;
-        padding: 5px 18px 5px 6px;
+        padding: 5px 6px;
         min-width: 50px;
     }
 
@@ -233,7 +222,7 @@ body {
     .currency-selector-header select,
     .currency-selector-top select {
         font-size: 9px;
-        padding: 6px 20px 6px 8px;
+        padding: 6px 8px;
         min-width: 55px;
     }
 
