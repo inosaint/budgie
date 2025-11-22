@@ -30,8 +30,8 @@ body {
     border-radius: 20px;
     padding: 30px;
     box-shadow:
-        0 8px 0 #1a1a1a,
-        0 12px 0 #0a0a0a,
+        -2px 8px 0 #1a1a1a,
+        -3px 12px 0 #0a0a0a,
         0 20px 40px rgba(0, 0, 0, 0.8),
         inset 0 2px 0 rgba(255, 255, 255, 0.1),
         inset 0 -2px 0 rgba(0, 0, 0, 0.3);
@@ -39,7 +39,8 @@ body {
     width: 100%;
     border: 4px solid #1a1a1a;
     border-top-color: #4a4a4a;
-    border-left-color: #3a3a3a;
+    border-left-color: #2a2a2a;
+    border-bottom-color: #0a0a0a;
     position: relative;
     margin-bottom: 30px;
     z-index: 100;
