@@ -618,9 +618,9 @@ function calculate() {
         }
     }
 
-    // Only calculate if both source and destination are provided
-    if (!source || !destination || !source.trim() || !destination.trim() || duration < 1) {
-        // Clear display if destinations are not complete
+    // Destination is required, source is optional
+    if (!destination || !destination.trim() || duration < 1) {
+        // Clear display if destination is not provided or duration is invalid
         document.getElementById('totalCost').innerHTML = '<span class="currency-symbol">₹</span>0';
         document.getElementById('breakdown').innerHTML = '';
         document.getElementById('perPerson').textContent = '';
