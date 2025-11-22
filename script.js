@@ -618,9 +618,9 @@ function calculate() {
         }
     }
 
-    // Destination is required, source is optional
-    if (!destination || !destination.trim() || duration < 1) {
-        // Clear display if destination is not provided or duration is invalid
+    // Both source and destination are required to generate budget
+    if (!source || !destination || !source.trim() || !destination.trim() || duration < 1) {
+        // Clear display if source or destination is not provided or duration is invalid
         document.getElementById('totalCost').innerHTML = '<span class="currency-symbol">₹</span>0';
         document.getElementById('breakdown').innerHTML = '';
         document.getElementById('perPerson').textContent = '';
