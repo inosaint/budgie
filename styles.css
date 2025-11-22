@@ -103,7 +103,7 @@ body {
 .currency-selector-header select,
 .currency-selector-top select {
     padding: 6px 8px;
-    background: transparent;
+    background: #2a2a2a;
     border: 1px solid #333;
     border-radius: 6px;
     color: #888;
@@ -113,16 +113,14 @@ body {
     letter-spacing: 0.5px;
     cursor: pointer;
     appearance: none;
-    transition: border-color 0.3s;
+    transition: background 0.3s;
     font-family: 'Courier New', 'Courier', monospace;
     min-width: 55px;
-    transform: translateZ(0);
-    backface-visibility: hidden;
 }
 
 .currency-selector-header select:hover,
 .currency-selector-top select:hover {
-    border-color: #444;
+    background: #2f2f2f;
 }
 
 .currency-selector-header select:focus,
