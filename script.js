@@ -629,7 +629,15 @@ function calculate() {
         }
     }
 
+    // Validate destination and duration
     if (!destination || duration < 1) {
+        // Clear the display
+        const currency = document.getElementById('currency').value;
+        const symbol = currencySymbols[currency];
+        document.getElementById('totalCost').textContent = `${symbol}0`;
+        document.getElementById('breakdown').innerHTML = '';
+        document.getElementById('perPerson').textContent = '';
+        lastCalculation = null;
         return;
     }
     
