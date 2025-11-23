@@ -928,20 +928,22 @@ function syncDuration() {
 document.querySelectorAll('input, select').forEach(element => {
     if (element.id !== 'currency' && element.id !== 'duration' && element.id !== 'people') {
         element.addEventListener('change', () => {
+            const source = document.getElementById('source').value;
             const destination = document.getElementById('destination').value;
             const duration = parseInt(document.getElementById('duration').value) || 0;
-            
-            if (destination && duration > 0) {
+
+            if (source && destination && duration > 0) {
                 calculate();
             }
         });
         
         if (element.type === 'text' || element.type === 'number') {
             element.addEventListener('input', () => {
+                const source = document.getElementById('source').value;
                 const destination = document.getElementById('destination').value;
                 const duration = parseInt(document.getElementById('duration').value) || 0;
-                
-                if (destination && duration > 0) {
+
+                if (source && destination && duration > 0) {
                     calculate();
                 }
             });
