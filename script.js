@@ -591,17 +591,6 @@ function calculate() {
     // Clear previous errors
     errorDiv.textContent = '';
 
-    // Validate dates - both must be provided if checkbox is enabled
-    if (enableTravelDates && (!startDate || !endDate)) {
-        errorDiv.textContent = '⚠ Please select both start and end dates';
-        // Show error state in display with Material Icons robot
-        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #00ff88;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #00ff88; animation: glitch 0.3s infinite;">ERROR</div>';
-        document.getElementById('breakdown').innerHTML = '';
-        document.getElementById('perPerson').textContent = '';
-        lastCalculation = null;
-        return;
-    }
-
     // Check if end date is before start date
     if (enableTravelDates && startDate && endDate) {
         const start = new Date(startDate);

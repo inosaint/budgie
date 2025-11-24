@@ -224,9 +224,10 @@ body {
         gap: 8px;
     }
 
-    /* Keep Duration/Travelers side-by-side if possible */
-    .inline-inputs {
-        gap: 8px;
+    /* Stack trip route vertically, keep Duration/Travelers side-by-side */
+    .input-group:first-of-type .inline-inputs {
+        grid-template-columns: 1fr;
+        gap: 10px;
     }
 
     /* Adjust calculator padding */
@@ -266,6 +267,12 @@ body {
 @media (min-width: 481px) and (max-width: 768px) {
     /* Stack date inputs vertically on larger mobile devices too */
     .date-inputs {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Stack trip route inputs vertically */
+    .input-group:first-of-type .inline-inputs {
         grid-template-columns: 1fr;
         gap: 10px;
     }
