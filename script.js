@@ -646,8 +646,8 @@ function calculate() {
     const activityCost = activityCosts[region] * duration * people;
 
     const totalCost = flightCost + accommodationCost + mealCost + activityCost;
-    
-    lastCalculation = { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, region, includeDailyExpense };
+
+    lastCalculation = { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, region, includeDailyExpense, accommodation };
     
     updateDisplay();
 }
@@ -684,7 +684,7 @@ function saveReceipt() {
     
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
-    const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense } = lastCalculation;
+    const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense, accommodation } = lastCalculation;
     const nights = Math.max(duration - 1, 1);
     const perPersonCost = totalCost / people;
     const startDate = document.getElementById('startDate').value;
@@ -694,7 +694,7 @@ function saveReceipt() {
     if (source) {
         tripRoute = `${source} → ${destination}`;
     }
-    
+
     // Format dates if provided
     let dateDisplay = '';
     if (startDate && endDate) {
@@ -707,11 +707,14 @@ function saveReceipt() {
         const options = { month: 'short', day: 'numeric', year: 'numeric' };
         dateDisplay = `<strong>Start Date:</strong> ${start.toLocaleDateString('en-US', options)}<br>`;
     }
-    
+
+    // Capitalize accommodation type for title
+    const accommodationTitle = accommodation.charAt(0).toUpperCase() + accommodation.slice(1);
+
     let receiptHTML = `
         <div class="receipt-header">
             <div class="receipt-title">BUDGIE</div>
-            <div>Travel Budget Estimate</div>
+            <div>${accommodationTitle} Travel Estimate</div>
             <div style="font-size: 10px; margin-top: 5px;">${new Date().toLocaleDateString()}</div>
         </div>
         <div style="margin: 15px 0;">
