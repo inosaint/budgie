@@ -261,6 +261,16 @@ body {
         display: none;
     }
 }
+
+/* Responsive adjustments for larger phones and small tablets */
+@media (min-width: 481px) and (max-width: 768px) {
+    /* Stack date inputs vertically on larger mobile devices too */
+    .date-inputs {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
 /* Display */
 .display {
     background: #4a5f3f;
