@@ -490,11 +490,11 @@ function getSeasonalMultiplier(startDate, endDate) {
 function formatCurrency(amount, currency) {
     const symbol = currencySymbols[currency];
     const converted = amount * exchangeRates[currency];
-    
+
     if (currency === 'JPY' || currency === 'KRW' || currency === 'IDR') {
-        return `${symbol}${Math.round(converted).toLocaleString()}`;
+        return `<span class="currency-symbol">${symbol}</span>${Math.round(converted).toLocaleString()}`;
     } else {
-        return `${symbol}${converted.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        return `<span class="currency-symbol">${symbol}</span>${converted.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
     }
 }
 
@@ -506,7 +506,7 @@ function updateDisplay() {
         const currency = document.getElementById('currency').value;
         const { flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense } = lastCalculation;
         
-        document.getElementById('totalCost').textContent = formatCurrency(totalCost, currency);
+        document.getElementById('totalCost').innerHTML = formatCurrency(totalCost, currency);
         
         const nights = Math.max(duration - 1, 1);
         
@@ -516,7 +516,7 @@ function updateDisplay() {
                 <span>${formatCurrency(flightCost, currency)}</span>
             </div>
             <div class="display-breakdown-item">
-                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">hotel</span> Accommodation (${nights} nights):</span>
+                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">hotel</span> Stay (${nights} nights):</span>
                 <span>${formatCurrency(accommodationCost, currency)}</span>
             </div>
             <div class="display-breakdown-item">
@@ -524,7 +524,7 @@ function updateDisplay() {
                 <span>${formatCurrency(mealCost, currency)}</span>
             </div>
             <div class="display-breakdown-item">
-                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">local_activity</span> Activities & Transport:</span>
+                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">local_activity</span> Local expenses:</span>
                 <span>${formatCurrency(activityCost, currency)}</span>
             </div>
         `;
@@ -540,9 +540,9 @@ function updateDisplay() {
         }
         
         document.getElementById('breakdown').innerHTML = breakdownHTML;
-        
+
         const perPersonCost = totalCost / people;
-        document.getElementById('perPerson').textContent = `${formatCurrency(perPersonCost, currency)} per person`;
+        document.getElementById('perPerson').innerHTML = `${formatCurrency(perPersonCost, currency)} per person`;
     }
 }
 
@@ -591,37 +591,15 @@ function calculate() {
     // Clear previous errors
     errorDiv.textContent = '';
 
-    // Validate dates - both must be provided if checkbox is enabled
-    if (enableTravelDates && (!startDate || !endDate)) {
-        errorDiv.textContent = '⚠ Please select both start and end dates';
-        // Show error state in display with Material Icons robot
-        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b; animation: glitch 0.3s infinite;">ERROR</div>';
-        document.getElementById('breakdown').innerHTML = '';
-        document.getElementById('perPerson').textContent = '';
-        lastCalculation = null;
-        return;
-    }
-    
-    // Validate that start and end dates are not the same
-    if (enableTravelDates && startDate && endDate && startDate === endDate) {
-        errorDiv.textContent = '⚠ Start and end dates must be different';
-        // Show error state in display with Material Icons robot
-        document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b; animation: glitch 0.3s infinite;">ERROR</div>';
-        document.getElementById('breakdown').innerHTML = '';
-        document.getElementById('perPerson').textContent = '';
-        lastCalculation = null;
-        return;
-    }
-    
     // Check if end date is before start date
     if (enableTravelDates && startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
-        
+
         if (end < start) {
             errorDiv.textContent = '⚠ End date cannot be before start date';
             // Show error state in display
-            document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #ff6b6b;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #ff6b6b; animation: glitch 0.3s infinite;">ERROR</div>';
+            document.getElementById('totalCost').innerHTML = '<span class="material-icons" style="font-size: 64px; color: #00ff88;">smart_toy</span><div style="font-size: 16px; margin-top: 5px; color: #00ff88; animation: glitch 0.3s infinite;">ERROR</div>';
             document.getElementById('breakdown').innerHTML = '';
             document.getElementById('perPerson').textContent = '';
             lastCalculation = null;
@@ -629,7 +607,15 @@ function calculate() {
         }
     }
 
-    if (!destination || duration < 1) {
+    // Both source and destination are required to generate budget
+    if (!source || !destination || !source.trim() || !destination.trim() || duration < 1) {
+        // Clear display if source or destination is not provided or duration is invalid
+        const currency = document.getElementById('currency').value;
+        const symbol = currencySymbols[currency];
+        document.getElementById('totalCost').textContent = `${symbol}0`;
+        document.getElementById('breakdown').innerHTML = '';
+        document.getElementById('perPerson').textContent = '';
+        lastCalculation = null;
         return;
     }
     
@@ -660,8 +646,8 @@ function calculate() {
     const activityCost = activityCosts[region] * duration * people;
 
     const totalCost = flightCost + accommodationCost + mealCost + activityCost;
-    
-    lastCalculation = { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, region, includeDailyExpense };
+
+    lastCalculation = { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, region, includeDailyExpense, accommodation };
     
     updateDisplay();
 }
@@ -698,7 +684,7 @@ function saveReceipt() {
     
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
-    const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense } = lastCalculation;
+    const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense, accommodation } = lastCalculation;
     const nights = Math.max(duration - 1, 1);
     const perPersonCost = totalCost / people;
     const startDate = document.getElementById('startDate').value;
@@ -708,7 +694,7 @@ function saveReceipt() {
     if (source) {
         tripRoute = `${source} → ${destination}`;
     }
-    
+
     // Format dates if provided
     let dateDisplay = '';
     if (startDate && endDate) {
@@ -721,11 +707,14 @@ function saveReceipt() {
         const options = { month: 'short', day: 'numeric', year: 'numeric' };
         dateDisplay = `<strong>Start Date:</strong> ${start.toLocaleDateString('en-US', options)}<br>`;
     }
-    
+
+    // Capitalize accommodation type for title
+    const accommodationTitle = accommodation.charAt(0).toUpperCase() + accommodation.slice(1);
+
     let receiptHTML = `
         <div class="receipt-header">
             <div class="receipt-title">BUDGIE</div>
-            <div>Travel Budget Estimate</div>
+            <div>${accommodationTitle} Travel Estimate</div>
             <div style="font-size: 10px; margin-top: 5px;">${new Date().toLocaleDateString()}</div>
         </div>
         <div style="margin: 15px 0;">
@@ -739,7 +728,7 @@ function saveReceipt() {
             <span>${formatCurrency(flightCost, currency)}</span>
         </div>
         <div class="receipt-item">
-            <span>Accommodation (${nights}n):</span>
+            <span>Stay (${nights}n):</span>
             <span>${formatCurrency(accommodationCost, currency)}</span>
         </div>
         <div class="receipt-item">
@@ -747,7 +736,7 @@ function saveReceipt() {
             <span>${formatCurrency(mealCost, currency)}</span>
         </div>
         <div class="receipt-item">
-            <span>Activities:</span>
+            <span>Local expenses:</span>
             <span>${formatCurrency(activityCost, currency)}</span>
         </div>
     `;
@@ -781,7 +770,10 @@ function saveReceipt() {
     
     document.getElementById('receiptContent').innerHTML = receiptHTML;
     document.getElementById('receiptOverlay').classList.add('show');
-    
+
+    // Add receipt to background stack
+    addReceiptToBackground(receiptHTML);
+
     setTimeout(() => {
         downloadReceiptAsImage();
     }, 500);
@@ -877,11 +869,22 @@ function generateItinerary() {
 
 function downloadReceiptAsImage() {
     const receipt = document.getElementById('receipt');
-    
+    const closeButton = receipt.querySelector('.receipt-close');
+
+    // Hide close button before capturing
+    if (closeButton) {
+        closeButton.style.display = 'none';
+    }
+
     html2canvas(receipt, {
         backgroundColor: '#ffffff',
         scale: 2
     }).then(canvas => {
+        // Show close button again after capturing
+        if (closeButton) {
+            closeButton.style.display = 'flex';
+        }
+
         canvas.toBlob(blob => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -917,20 +920,30 @@ function syncDuration() {
 document.querySelectorAll('input, select').forEach(element => {
     if (element.id !== 'currency' && element.id !== 'duration' && element.id !== 'people') {
         element.addEventListener('change', () => {
+            const source = document.getElementById('source').value;
             const destination = document.getElementById('destination').value;
             const duration = parseInt(document.getElementById('duration').value) || 0;
-            
-            if (destination && duration > 0) {
+
+            // Only calculate if both source and destination are valid cities in our database
+            const isSourceValid = destinations.hasOwnProperty(source);
+            const isDestinationValid = destinations.hasOwnProperty(destination);
+
+            if (source && destination && duration > 0 && isSourceValid && isDestinationValid) {
                 calculate();
             }
         });
         
         if (element.type === 'text' || element.type === 'number') {
             element.addEventListener('input', () => {
+                const source = document.getElementById('source').value;
                 const destination = document.getElementById('destination').value;
                 const duration = parseInt(document.getElementById('duration').value) || 0;
-                
-                if (destination && duration > 0) {
+
+                // Only calculate if both source and destination are valid cities in our database
+                const isSourceValid = !source || destinations.hasOwnProperty(source);
+                const isDestinationValid = !destination || destinations.hasOwnProperty(destination);
+
+                if (source && destination && duration > 0 && isSourceValid && isDestinationValid) {
                     calculate();
                 }
             });
@@ -1012,12 +1025,12 @@ document.getElementById('enableTravelDates').addEventListener('change', function
     if (this.checked) {
         startDateInput.disabled = false;
         endDateInput.disabled = false;
-        
+
         // If no dates set, auto-set based on current duration
         if (!startDateInput.value) {
             const today = new Date();
             startDateInput.value = today.toISOString().split('T')[0];
-            
+
             // Auto-calculate end date based on duration
             const duration = parseInt(document.getElementById('duration').value) || 7;
             const endDate = new Date(today);
@@ -1093,6 +1106,243 @@ function setTodayAsMinDate() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('startDate').setAttribute('min', today);
     document.getElementById('endDate').setAttribute('min', today);
+}
+
+// Receipt Stack Management
+let receiptCounter = 0;
+const MAX_RECEIPTS = 15; // Upper limit for receipts
+let mobileReceipts = []; // Store mobile receipts separately
+
+function isMobile() {
+    return window.innerWidth <= 480;
+}
+
+function addReceiptToBackground(receiptHTML) {
+    // On mobile, use the mobile receipt panel instead
+    if (isMobile()) {
+        addMobileReceipt(receiptHTML);
+        return;
+    }
+
+    // Desktop: Add to background stack
+    const container = document.getElementById('receiptStackBackground');
+    const receiptId = `stacked-receipt-${receiptCounter++}`;
+
+    // Check if we've hit the limit, remove oldest receipt
+    const existingReceipts = container.querySelectorAll('.stacked-receipt');
+    if (existingReceipts.length >= MAX_RECEIPTS) {
+        existingReceipts[0].remove(); // Remove oldest (first) receipt
+    }
+
+    // Create receipt element
+    const receiptDiv = document.createElement('div');
+    receiptDiv.className = 'stacked-receipt';
+    receiptDiv.id = receiptId;
+
+    const receiptWidth = 280;
+
+    // Random positioning (scattered across viewport)
+    const randomX = Math.random() * (window.innerWidth - 320);
+    const randomY = Math.random() * (window.innerHeight - 400);
+    const randomRotation = (Math.random() - 0.5) * 15; // -7.5 to 7.5 degrees
+
+    // Generate unique crumple pattern using CSS variables
+    const crumpleVars = {
+        '--crumple-x1': `${Math.random() * 30 + 10}%`,
+        '--crumple-y1': `${Math.random() * 30 + 10}%`,
+        '--crumple-x2': `${Math.random() * 30 + 70}%`,
+        '--crumple-y2': `${Math.random() * 30 + 60}%`,
+        '--crumple-x3': `${Math.random() * 30 + 30}%`,
+        '--crumple-y3': `${Math.random() * 30 + 70}%`,
+        '--crumple-x4': `${Math.random() * 30 + 60}%`,
+        '--crumple-y4': `${Math.random() * 30 + 10}%`,
+        '--crumple-x5': `${Math.random() * 20 + 40}%`,
+        '--crumple-y5': `${Math.random() * 20 + 40}%`,
+        '--crumple-x6': `${Math.random() * 30 + 20}%`,
+        '--crumple-y6': `${Math.random() * 30 + 50}%`,
+        '--crumple-x7': `${Math.random() * 30 + 70}%`,
+        '--crumple-y7': `${Math.random() * 30 + 30}%`,
+        '--wrinkle-angle1': `${Math.random() * 60 + 100}deg`,
+        '--wrinkle-angle2': `${Math.random() * 60 + 40}deg`
+    };
+
+    // Apply styles
+    receiptDiv.style.left = `${randomX}px`;
+    receiptDiv.style.top = `${randomY}px`;
+    receiptDiv.style.transform = `rotate(${randomRotation}deg)`;
+    receiptDiv.style.width = `${receiptWidth}px`;
+
+    // Apply crumple variables
+    Object.entries(crumpleVars).forEach(([key, value]) => {
+        receiptDiv.style.setProperty(key, value);
+    });
+
+    // Add content and delete button
+    receiptDiv.innerHTML = `
+        <button class="stacked-receipt-delete" onclick="deleteStackedReceipt('${receiptId}', event)">×</button>
+        <div class="stacked-receipt-content">${receiptHTML}</div>
+    `;
+
+    // Make receipt draggable
+    makeDraggable(receiptDiv, receiptHTML);
+
+    container.appendChild(receiptDiv);
+}
+
+// Make receipts draggable on desktop
+function makeDraggable(element, receiptHTML) {
+    let isDragging = false;
+    let startX, startY;
+    let initialLeft, initialTop;
+    let hasMoved = false;
+
+    element.addEventListener('mousedown', function(e) {
+        // Ignore if clicking delete button
+        if (e.target.classList.contains('stacked-receipt-delete')) {
+            return;
+        }
+
+        isDragging = true;
+        hasMoved = false;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = element.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        element.classList.add('dragging');
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+
+        // Mark as moved if dragged more than 5px
+        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+            hasMoved = true;
+        }
+
+        element.style.left = (initialLeft + deltaX) + 'px';
+        element.style.top = (initialTop + deltaY) + 'px';
+    });
+
+    document.addEventListener('mouseup', function(e) {
+        if (!isDragging) return;
+
+        isDragging = false;
+        element.classList.remove('dragging');
+
+        // If it was just a click (not dragged), open the modal
+        if (!hasMoved && !e.target.classList.contains('stacked-receipt-delete')) {
+            viewStackedReceipt(receiptHTML);
+        }
+    });
+}
+
+// Mobile Receipt Management
+function addMobileReceipt(receiptHTML) {
+    const receiptId = `mobile-receipt-${receiptCounter++}`;
+
+    // Check if we've hit the limit
+    if (mobileReceipts.length >= MAX_RECEIPTS) {
+        mobileReceipts.shift(); // Remove oldest
+    }
+
+    mobileReceipts.push({
+        id: receiptId,
+        html: receiptHTML,
+        timestamp: Date.now()
+    });
+
+    updateMobileReceiptCount();
+    updateMobileReceiptList();
+}
+
+function updateMobileReceiptCount() {
+    const countElement = document.getElementById('mobileReceiptCount');
+    if (countElement) {
+        countElement.textContent = mobileReceipts.length;
+        // Show/hide button based on receipt count
+        const button = document.getElementById('mobileReceiptButton');
+        if (button) {
+            button.style.display = mobileReceipts.length > 0 ? 'block' : 'none';
+        }
+    }
+}
+
+function updateMobileReceiptList() {
+    const listElement = document.getElementById('mobileReceiptList');
+    const emptyElement = document.getElementById('mobileReceiptEmpty');
+
+    if (mobileReceipts.length === 0) {
+        emptyElement.style.display = 'block';
+        // Remove all receipt items
+        listElement.querySelectorAll('.mobile-receipt-item').forEach(item => item.remove());
+    } else {
+        emptyElement.style.display = 'none';
+
+        // Clear and rebuild list
+        listElement.querySelectorAll('.mobile-receipt-item').forEach(item => item.remove());
+
+        mobileReceipts.forEach((receipt, index) => {
+            const item = document.createElement('div');
+            item.className = 'mobile-receipt-item';
+            item.id = receipt.id;
+
+            item.innerHTML = `
+                <button class="mobile-receipt-item-delete" onclick="deleteMobileReceipt(${index}, event)">×</button>
+                ${receipt.html}
+            `;
+
+            item.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('mobile-receipt-item-delete')) {
+                    viewStackedReceipt(receipt.html);
+                    closeMobileReceiptPanel();
+                }
+            });
+
+            listElement.appendChild(item);
+        });
+    }
+}
+
+function deleteMobileReceipt(index, event) {
+    event.stopPropagation();
+    mobileReceipts.splice(index, 1);
+    updateMobileReceiptCount();
+    updateMobileReceiptList();
+}
+
+function openMobileReceiptPanel() {
+    const panel = document.getElementById('mobileReceiptPanel');
+    panel.classList.add('show');
+}
+
+function closeMobileReceiptPanel() {
+    const panel = document.getElementById('mobileReceiptPanel');
+    panel.classList.remove('show');
+}
+
+function viewStackedReceipt(receiptHTML) {
+    document.getElementById('receiptContent').innerHTML = receiptHTML;
+    document.getElementById('receiptOverlay').classList.add('show');
+}
+
+function deleteStackedReceipt(receiptId, event) {
+    event.stopPropagation();
+    const receipt = document.getElementById(receiptId);
+    if (receipt) {
+        receipt.style.transition = 'all 0.3s ease';
+        receipt.style.opacity = '0';
+        receipt.style.transform = receipt.style.transform + ' scale(0.8)';
+        setTimeout(() => {
+            receipt.remove();
+        }, 300);
+    }
 }
 
 // Initialize

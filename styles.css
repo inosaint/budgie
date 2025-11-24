@@ -29,19 +29,27 @@ body {
     background: linear-gradient(145deg, #3a3a3a, #252525);
     border-radius: 20px;
     padding: 30px;
-    box-shadow: 
-        0 8px 0 #1a1a1a,
-        0 12px 0 #0a0a0a,
-        0 20px 40px rgba(0, 0, 0, 0.8),
-        inset 0 2px 0 rgba(255, 255, 255, 0.1),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+    box-shadow:
+        inset 1px 5px 5px -1px #fff9,
+        inset -1px -2px 5px -1px #00000080,
+        0 1px 1px #00000013,
+        0 2px 2px #00000014,
+        0 4px 4px #0000001a,
+        0 8px 8px #0003,
+        0 16px 16px #00000038;
     max-width: 500px;
     width: 100%;
     border: 4px solid #1a1a1a;
     border-top-color: #4a4a4a;
-    border-left-color: #3a3a3a;
+    border-left-color: #2a2a2a;
+    border-bottom-color: #0a0a0a;
     position: relative;
     margin-bottom: 30px;
+    z-index: 100;
+    overflow: hidden;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
 .calculator-container::before {
@@ -55,12 +63,14 @@ body {
     border-radius: 24px;
     z-index: -1;
     border: 2px solid #0a0a0a;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 /* Header */
 .calculator-header {
-    padding: 16px 15px 12px 15px;
-    margin-bottom: 25px;
+    padding: 8px 12px 8px 12px;
+    margin-bottom: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -73,87 +83,201 @@ body {
 }
 
 .budgie-text {
-    color: #00aa55;
-    font-size: 40px;
+    color: #555;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: -2px;
-    font-family: 'Courier New', 'Courier', monospace;
+    letter-spacing: 1px;
+    font-family: 'Science Gothic', Arial, Helvetica, sans-serif;
     text-transform: uppercase;
-    text-shadow: 
-        -5px -5px 0 white,
-        5px -5px 0 white,
-        -5px 5px 0 white,
-        5px 5px 0 white,
-        -5px 0 0 white,
-        5px 0 0 white,
-        0 -5px 0 white,
-        0 5px 0 white,
-        -4px -4px 0 white,
-        4px -4px 0 white,
-        -4px 4px 0 white,
-        4px 4px 0 white;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    opacity: 0.7;
 }
 
 /* Currency Selector in Header */
-.currency-selector-header {
+.currency-selector-header,
+.currency-selector-top {
     display: flex;
     align-items: center;
     flex-shrink: 0;
 }
 
-.currency-selector-header select {
-    padding: 8px 26px 8px 8px;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Clean currency selector - minimal styling */
+.currency-select {
+    padding: 6px 8px;
+    background: #2a2a2a;
+    border: 1px solid #333;
     border-radius: 6px;
-    color: #aaa;
+    color: #888;
     font-size: 11px;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23aaa' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    transition: all 0.2s;
     font-family: 'Courier New', 'Courier', monospace;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-    min-width: 70px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    box-shadow: none;
 }
 
-.currency-selector-header select:hover {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.15);
+.currency-select:hover {
+    background: #2f2f2f;
+    box-shadow: none;
 }
 
-.currency-selector-header select:focus {
+.currency-select:focus {
     outline: none;
     border-color: #00ff88;
-    box-shadow: 
-        inset 0 1px 3px rgba(0, 0, 0, 0.3),
-        0 0 0 2px rgba(0, 255, 136, 0.2);
 }
 
-.currency-selector-header select option {
+.currency-select option {
     background: #2a2a2a;
     color: #fff;
-    padding: 8px;
-    font-family: 'Courier New', 'Courier', monospace;
 }
 
-/* Responsive adjustments */
-@media (max-width: 480px) {
-    .budgie-text {
-        font-size: 32px;
-        letter-spacing: -1px;
+/* Responsive adjustments for small phones (iPhone SE, small Android) */
+@media (max-width: 375px) {
+    body {
+        padding: 20px 15px 80px 15px; /* Reduced top padding, added bottom for receipt button */
     }
-    
-    .currency-selector-header select {
+
+    .budgie-text {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+    }
+
+    .currency-select {
         font-size: 10px;
-        padding: 6px 22px 6px 6px;
-        min-width: 60px;
+        padding: 5px 6px;
+    }
+
+    /* Stack ALL inline inputs vertically on very small screens */
+    .inline-inputs {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Stack date inputs vertically */
+    .date-inputs {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    /* Adjust calculator padding for very small screens */
+    .calculator-container {
+        padding: 18px;
+        margin-bottom: 20px;
+    }
+
+    /* Reduce input font size */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    /* Smaller buttons */
+    .calc-button {
+        font-size: 13px;
+        padding: 12px;
+    }
+
+    /* Reduce display font sizes for small screens */
+    .display-total {
+        font-size: 28px;
+    }
+
+    .display-breakdown {
+        font-size: 12px;
+    }
+
+    .per-person {
+        font-size: 12px;
+    }
+
+    /* Hide background receipt stack on mobile */
+    .receipt-stack-background {
+        display: none;
     }
 }
+
+/* Responsive adjustments for slightly larger phones */
+@media (min-width: 376px) and (max-width: 480px) {
+    body {
+        padding: 30px 20px 80px 20px; /* Reduced top padding, added bottom for receipt button */
+    }
+
+    .budgie-text {
+        font-size: 15px;
+        letter-spacing: 1px;
+    }
+
+    .currency-select {
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+
+    /* Stack date inputs vertically */
+    .date-inputs {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    /* Stack trip route vertically, keep Duration/Travelers side-by-side */
+    .input-group:first-of-type .inline-inputs {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Adjust calculator padding */
+    .calculator-container {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Slightly reduce input font size */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+        font-size: 13px;
+    }
+
+    /* Adjust display font sizes for medium screens */
+    .display-total {
+        font-size: 32px;
+    }
+
+    .display-breakdown {
+        font-size: 12px;
+    }
+
+    .per-person {
+        font-size: 13px;
+    }
+
+    /* Hide background receipt stack on mobile */
+    .receipt-stack-background {
+        display: none;
+    }
+}
+
+/* Responsive adjustments for larger phones and small tablets */
+@media (min-width: 481px) and (max-width: 768px) {
+    /* Stack date inputs vertically on larger mobile devices too */
+    .date-inputs {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Stack trip route inputs vertically */
+    .input-group:first-of-type .inline-inputs {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
 /* Display */
 .display {
     background: #4a5f3f;
@@ -269,6 +393,14 @@ body {
     z-index: 1;
 }
 
+/* Fix currency symbol sizing (especially rupee symbol) */
+.currency-symbol {
+    font-size: 0.92em;
+    display: inline-block;
+    vertical-align: baseline;
+    line-height: 1;
+}
+
 .display-breakdown {
     color: #88ff88;
     font-size: 13px;
@@ -316,31 +448,42 @@ label {
 /* Input Fields */
 input, select {
     width: 100%;
-    padding: 12px;
-    background: linear-gradient(145deg, #222, #1a1a1a);
-    border: 2px solid #333;
-    border-top-color: #111;
-    border-left-color: #1a1a1a;
+    padding: 14px;
+    background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+    border: 3px solid #1a1a1a;
+    border-top-color: #4a4a4a;
+    border-left-color: #3a3a3a;
     border-radius: 8px;
     color: #fff;
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 600;
     font-family: 'Courier New', 'Courier', monospace;
-    transition: all 0.3s;
-    box-shadow: 
-        inset 0 2px 4px rgba(0, 0, 0, 0.5),
-        0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: box-shadow 0.2s, background 0.2s, border-color 0.2s;
+    box-shadow:
+        0 4px 0 #1a1a1a,
+        0 5px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 input:focus, select:focus {
     outline: none;
     border-color: #00ff88;
-    box-shadow: 
-        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    box-shadow:
+        0 4px 0 #1a1a1a,
+        0 5px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
         0 0 0 2px rgba(0, 255, 136, 0.2);
 }
 
-input:hover, select:hover {
-    border-color: #444;
+input:hover:not(:focus), select:hover:not(:focus):not(.currency-select) {
+    background: linear-gradient(145deg, #444, #333);
+    border-color: #2a2a2a;
+    border-top-color: #555;
+    border-left-color: #444;
+    box-shadow:
+        0 5px 0 #1a1a1a,
+        0 6px 10px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -349,7 +492,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 /* Select Dropdowns - 3D Block Style */
-select {
+select:not(.currency-select) {
     cursor: pointer;
     appearance: none;
     background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
@@ -361,7 +504,7 @@ select {
     color: #fff;
     font-size: 15px;
     font-weight: 600;
-    box-shadow: 
+    box-shadow:
         0 4px 0 #1a1a1a,
         0 5px 8px rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -372,36 +515,38 @@ select {
     padding-right: 40px;
 }
 
-select:hover {
+select:hover:not(:focus):not(.currency-select) {
     background: linear-gradient(145deg, #444, #333);
     background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2300ff88' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
+    border-color: #2a2a2a;
     border-top-color: #555;
-    box-shadow: 
+    border-left-color: #444;
+    box-shadow:
         0 5px 0 #1a1a1a,
         0 6px 10px rgba(0, 0, 0, 0.5),
         inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-select:focus {
+select:focus:not(.currency-select) {
     outline: none;
     border-color: #00ff88;
     background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2300ff88' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
-    box-shadow: 
+    box-shadow:
         0 4px 0 #1a1a1a,
         0 5px 8px rgba(0, 0, 0, 0.4),
         0 0 0 2px rgba(0, 255, 136, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-select:active {
+select:active:not(.currency-select) {
     background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2300ff88' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
-    box-shadow: 
+    box-shadow:
         0 2px 0 #1a1a1a,
         0 3px 4px rgba(0, 0, 0, 0.3),
         inset 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -878,6 +1023,8 @@ input[type="date"] {
     color: #666;
     font-size: 12px;
     margin-top: 20px;
+    position: relative;
+    z-index: 100;
 }
 
 .footer-content {
@@ -915,4 +1062,348 @@ input[type="date"] {
 .error-modal .receipt-title {
     color: #ff4444;
     animation: glitch 0.3s infinite;
+}
+
+/* Background Receipt Stack */
+.receipt-stack-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.stacked-receipt {
+    position: absolute;
+    width: 280px;
+    background: white;
+    padding: 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        inset 0 0 50px rgba(0, 0, 0, 0.03);
+    cursor: move;
+    pointer-events: all;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+    opacity: 0.85;
+    filter: contrast(0.95) brightness(0.98);
+    user-select: none;
+}
+
+.stacked-receipt:hover {
+    opacity: 1;
+    z-index: 10;
+    filter: contrast(1) brightness(1);
+}
+
+.stacked-receipt.dragging {
+    opacity: 0.6;
+    z-index: 1000;
+    cursor: grabbing;
+    transition: none;
+}
+
+.stacked-receipt-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    font-weight: bold;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    z-index: 1;
+}
+
+.stacked-receipt:hover .stacked-receipt-delete {
+    display: flex;
+}
+
+.stacked-receipt-delete:hover {
+    background: #ff6666;
+    transform: scale(1.15);
+}
+
+.stacked-receipt-content {
+    color: #000;
+    pointer-events: none;
+}
+
+/* Crumpled paper texture effect - uses CSS variables for unique patterns */
+.stacked-receipt::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(ellipse at var(--crumple-x1, 15%) var(--crumple-y1, 25%), rgba(0,0,0,0.08) 0%, transparent 40%),
+        radial-gradient(ellipse at var(--crumple-x2, 85%) var(--crumple-y2, 75%), rgba(0,0,0,0.06) 0%, transparent 40%),
+        radial-gradient(ellipse at var(--crumple-x3, 35%) var(--crumple-y3, 85%), rgba(0,0,0,0.07) 0%, transparent 40%),
+        radial-gradient(ellipse at var(--crumple-x4, 65%) var(--crumple-y4, 15%), rgba(0,0,0,0.06) 0%, transparent 40%),
+        radial-gradient(ellipse at var(--crumple-x5, 50%) var(--crumple-y5, 50%), rgba(0,0,0,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at var(--crumple-x6, 25%) var(--crumple-y6, 60%), rgba(0,0,0,0.05) 0%, transparent 35%),
+        radial-gradient(ellipse at var(--crumple-x7, 75%) var(--crumple-y7, 40%), rgba(0,0,0,0.05) 0%, transparent 35%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Additional wrinkle effect - uses CSS variables for unique angles */
+.stacked-receipt::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        linear-gradient(var(--wrinkle-angle1, 125deg), transparent 45%, rgba(0,0,0,0.04) 50%, transparent 55%),
+        linear-gradient(var(--wrinkle-angle2, 65deg), transparent 45%, rgba(0,0,0,0.03) 50%, transparent 55%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Mobile optimizations for receipt stack */
+@media (max-width: 767px) {
+    .stacked-receipt {
+        width: 200px;
+        padding: 14px;
+        font-size: 9px;
+        line-height: 1.4;
+    }
+
+    .stacked-receipt-delete {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        top: 5px;
+        right: 5px;
+    }
+
+    /* Reduce opacity on mobile so they don't overwhelm */
+    .stacked-receipt {
+        opacity: 0.7;
+    }
+
+    .stacked-receipt:hover {
+        opacity: 1;
+        transform: scale(1.03) !important;
+    }
+}
+
+/* Mobile Receipt Viewer */
+.mobile-receipt-button {
+    display: none;
+    width: fit-content;
+    max-width: 90%;
+    background: white;
+    padding: 16px 32px;
+    border-radius: 50px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    margin: 30px auto 20px auto;
+}
+
+.mobile-receipt-button:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+    transform: translateY(-2px);
+}
+
+.mobile-receipt-button:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.mobile-receipt-button-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.mobile-receipt-button-text {
+    color: #333;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mobile-receipt-button-text .material-icons {
+    color: #666;
+}
+
+.mobile-receipt-count {
+    background: #00ff88;
+    color: #1a1a1a;
+    border-radius: 50%;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-receipt-panel {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    max-height: 70vh;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 300;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-receipt-panel.show {
+    display: block;
+    transform: translateY(0);
+}
+
+.mobile-receipt-panel-header {
+    padding: 20px 20px 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    position: relative;
+}
+
+/* Drag handle indicator */
+.mobile-receipt-panel-header::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: #d0d0d0;
+    border-radius: 2px;
+}
+
+.mobile-receipt-panel-title {
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 8px;
+}
+
+.mobile-receipt-panel-close {
+    background: #f5f5f5;
+    color: #666;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 12px;
+    transition: all 0.2s;
+}
+
+.mobile-receipt-panel-close:active {
+    background: #e8e8e8;
+    transform: scale(0.95);
+}
+
+.mobile-receipt-list {
+    overflow-y: auto;
+    max-height: calc(70vh - 60px);
+    padding: 16px;
+}
+
+.mobile-receipt-item {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mobile-receipt-item:active {
+    transform: scale(0.98);
+}
+
+.mobile-receipt-item-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #f5f5f5;
+    color: #999;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    transition: all 0.2s;
+}
+
+.mobile-receipt-item-delete:active {
+    background: #e8e8e8;
+    color: #666;
+    transform: scale(0.95);
+}
+
+.mobile-receipt-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+    font-family: 'Courier New', monospace;
+}
+
+/* Mobile receipt button visibility controlled by JavaScript */
+@media (max-width: 480px) {
+    .mobile-receipt-button {
+        /* display controlled by JS based on receipt count */
+    }
 }
