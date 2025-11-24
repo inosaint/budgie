@@ -932,7 +932,11 @@ document.querySelectorAll('input, select').forEach(element => {
             const destination = document.getElementById('destination').value;
             const duration = parseInt(document.getElementById('duration').value) || 0;
 
-            if (source && destination && duration > 0) {
+            // Only calculate if both source and destination are valid cities in our database
+            const isSourceValid = destinations.hasOwnProperty(source);
+            const isDestinationValid = destinations.hasOwnProperty(destination);
+
+            if (source && destination && duration > 0 && isSourceValid && isDestinationValid) {
                 calculate();
             }
         });
@@ -943,7 +947,11 @@ document.querySelectorAll('input, select').forEach(element => {
                 const destination = document.getElementById('destination').value;
                 const duration = parseInt(document.getElementById('duration').value) || 0;
 
-                if (source && destination && duration > 0) {
+                // Only calculate if both source and destination are valid cities in our database
+                const isSourceValid = !source || destinations.hasOwnProperty(source);
+                const isDestinationValid = !destination || destinations.hasOwnProperty(destination);
+
+                if (source && destination && duration > 0 && isSourceValid && isDestinationValid) {
                     calculate();
                 }
             });
@@ -1025,6 +1033,18 @@ document.getElementById('enableTravelDates').addEventListener('change', function
     if (this.checked) {
         startDateInput.disabled = false;
         endDateInput.disabled = false;
+
+        // If no dates set, auto-set based on current duration
+        if (!startDateInput.value) {
+            const today = new Date();
+            startDateInput.value = today.toISOString().split('T')[0];
+
+            // Auto-calculate end date based on duration
+            const duration = parseInt(document.getElementById('duration').value) || 7;
+            const endDate = new Date(today);
+            endDate.setDate(today.getDate() + duration - 1); // duration includes start day
+            endDateInput.value = endDate.toISOString().split('T')[0];
+        }
     } else {
         startDateInput.disabled = true;
         endDateInput.disabled = true;
