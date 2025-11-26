@@ -156,12 +156,6 @@ body {
         gap: 10px;
     }
 
-    /* Stack date inputs vertically */
-    .date-inputs {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-
     /* Adjust calculator padding for very small screens */
     .calculator-container {
         padding: 18px;
@@ -220,12 +214,6 @@ body {
         padding: 6px 8px;
     }
 
-    /* Stack date inputs vertically */
-    .date-inputs {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-
     /* Stack trip route vertically, keep Duration/Travelers side-by-side */
     .input-group:first-of-type .inline-inputs {
         grid-template-columns: 1fr;
@@ -269,12 +257,6 @@ body {
 
 /* Responsive adjustments for larger phones and small tablets */
 @media (min-width: 481px) and (max-width: 768px) {
-    /* Stack date inputs vertically on larger mobile devices too */
-    .date-inputs {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
     /* Stack trip route inputs vertically */
     .input-group:first-of-type .inline-inputs {
         grid-template-columns: 1fr;
@@ -585,6 +567,26 @@ select:active:not(.currency-select) {
 
 input[type="date"] {
     color-scheme: dark;
+    cursor: pointer;
+    position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    color: transparent;
+    background: transparent;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-clear-button {
+    z-index: 1;
 }
 
 /* Autocomplete */
