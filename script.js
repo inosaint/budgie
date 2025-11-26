@@ -1021,7 +1021,7 @@ document.getElementById('enableTravelDates').addEventListener('change', function
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     const errorDiv = document.getElementById('dateError');
-    
+
     if (this.checked) {
         startDateInput.disabled = false;
         endDateInput.disabled = false;
@@ -1029,13 +1029,17 @@ document.getElementById('enableTravelDates').addEventListener('change', function
         // If no dates set, auto-set based on current duration
         if (!startDateInput.value) {
             const today = new Date();
-            startDateInput.value = today.toISOString().split('T')[0];
+            const todayStr = today.toISOString().split('T')[0];
+            startDateInput.value = todayStr;
 
             // Auto-calculate end date based on duration
             const duration = parseInt(document.getElementById('duration').value) || 7;
             const endDate = new Date(today);
             endDate.setDate(today.getDate() + duration - 1); // duration includes start day
             endDateInput.value = endDate.toISOString().split('T')[0];
+
+            // Set minimum date for end date to be the start date
+            endDateInput.setAttribute('min', todayStr);
         }
     } else {
         startDateInput.disabled = true;
@@ -1043,34 +1047,52 @@ document.getElementById('enableTravelDates').addEventListener('change', function
         startDateInput.value = '';
         endDateInput.value = '';
         errorDiv.textContent = '';
+
+        // Reset min/max attributes
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.setAttribute('min', today);
+        endDateInput.setAttribute('min', today);
+        startDateInput.removeAttribute('max');
+
         calculate();
     }
 });
 
-// Date change handlers  
+// Date change handlers
 document.getElementById('startDate').addEventListener('change', function() {
     const startDate = this.value;
     const endDateInput = document.getElementById('endDate');
     const duration = parseInt(document.getElementById('duration').value) || 7;
-    
+
     if (startDate) {
+        // Set minimum date for end date to be the start date
+        endDateInput.setAttribute('min', startDate);
+
         // Auto-calculate end date based on duration
         const start = new Date(startDate);
         const end = new Date(start);
         end.setDate(start.getDate() + duration - 1); // duration includes start day
         endDateInput.value = end.toISOString().split('T')[0];
-        
+
         document.getElementById('dateError').textContent = '';
         calculate();
-        
+
         // Close the date picker
         this.blur();
     }
 });
 
 document.getElementById('endDate').addEventListener('change', function() {
+    const endDate = this.value;
+    const startDateInput = document.getElementById('startDate');
+
+    if (endDate) {
+        // Set maximum date for start date to be the end date
+        startDateInput.setAttribute('max', endDate);
+    }
+
     syncDuration();
-    
+
     // Close the date picker
     this.blur();
 });
