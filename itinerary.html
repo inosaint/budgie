@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budgie - Travel Itinerary</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="itinerary.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel - Budget Summary -->
+        <div class="budget-summary">
+            <div class="summary-header">
+                <div class="budgie-logo">BUDGIE</div>
+                <button class="close-btn" onclick="window.close()">✕</button>
+            </div>
+
+            <div class="summary-subtitle">Travel Budget Estimate</div>
+            <div class="summary-divider">...........................</div>
+
+            <div class="summary-content">
+                <div class="summary-row">
+                    <span class="label">Route:</span>
+                    <span class="value" id="summaryRoute">Bangalore → Auckland</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Duration:</span>
+                    <span class="value" id="summaryDuration">7 days</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Date Range:</span>
+                    <span class="value" id="summaryDates">Dec 3, 2023 - Dec 9, 2023</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Travelers:</span>
+                    <span class="value" id="summaryTravelers">2</span>
+                </div>
+
+                <div class="summary-divider">...........................</div>
+
+                <div class="summary-row">
+                    <span class="label">Flights:</span>
+                    <span class="value" id="summaryFlights">₹712,721</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Accommodation (BUD):</span>
+                    <span class="value" id="summaryAccom">₹31,818</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Meals:</span>
+                    <span class="value" id="summaryMeals">₹41,455</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Activities:</span>
+                    <span class="value" id="summaryActivities">₹14,523</span>
+                </div>
+                <div class="summary-row">
+                    <span class="label">Per Day Average:</span>
+                    <span class="value" id="summaryPerDay">₹14,602</span>
+                </div>
+
+                <div class="summary-divider">...........................</div>
+
+                <div class="summary-row total">
+                    <span class="label">TOTAL:</span>
+                    <span class="value" id="summaryTotal">₹827,858</span>
+                </div>
+                <div class="summary-row actual">
+                    <span class="label">(++ Actual):</span>
+                    <span class="value" id="summaryActual">₹42,402</span>
+                </div>
+
+                <div class="summary-divider">...........................</div>
+            </div>
+
+            <div class="summary-actions">
+                <button class="action-btn" onclick="alert('Feature coming soon!')">Calculate New Trip by Season</button>
+                <button class="action-btn" onclick="alert('Feature coming soon!')">Send PDF to Cofounders</button>
+            </div>
+        </div>
+
+        <!-- Right Panel - Itinerary -->
+        <div class="itinerary-container">
+            <div id="itinerarySheets">
+                <!-- Day sheets will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="itinerary.js"></script>
+</body>
+</html>
