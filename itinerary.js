@@ -289,6 +289,11 @@ function editDay(day) {
     alert(`Editing Day ${day}... (Feature coming soon)`);
 }
 
+// Save itinerary as PDF
+function saveItineraryAsPDF() {
+    window.print();
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     renderItinerary();

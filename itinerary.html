@@ -10,8 +10,10 @@
 </head>
 <body>
     <div class="container">
-        <!-- Left Panel - Budget Summary -->
-        <div class="budget-summary">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Budget Summary Receipt -->
+            <div class="budget-summary">
             <div class="receipt-header">
                 <div class="receipt-title">BUDGIE</div>
                 <div>Budget Travel Estimate</div>
@@ -61,10 +63,13 @@
                 <div>Estimates may vary by season</div>
                 <div>Thank you for using Budgie!</div>
             </div>
+        </div>
 
-            <div style="margin-top: 20px;">
+            <!-- Action Buttons (Outside Receipt) -->
+            <div class="action-buttons-container">
                 <button class="action-btn" onclick="window.location.href='index.html'">← Go Back to Calculator</button>
                 <button class="action-btn regenerate-btn" onclick="alert('Feature coming soon!')">🔄 Regenerate Itinerary</button>
+                <button class="action-btn save-pdf-btn" onclick="saveItineraryAsPDF()">📄 Save as PDF</button>
             </div>
         </div>
 

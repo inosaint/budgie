@@ -18,7 +18,13 @@ body {
     margin: 0 auto;
 }
 
-/* ==================== LEFT PANEL - BUDGET SUMMARY ==================== */
+/* ==================== LEFT PANEL ==================== */
+
+.left-panel {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
 
 .budget-summary {
     width: 380px;
@@ -26,9 +32,6 @@ body {
     border: 2px solid #333;
     padding: 20px;
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
-    position: sticky;
-    top: 20px;
-    height: fit-content;
     font-size: 13px;
     line-height: 1.6;
 }
@@ -71,6 +74,15 @@ body {
     line-height: 1.4;
 }
 
+/* Action buttons container (outside receipt) */
+.action-buttons-container {
+    width: 380px;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .action-btn {
     background: white;
     border: 2px solid #333;
@@ -80,7 +92,6 @@ body {
     cursor: pointer;
     transition: all 0.1s;
     width: 100%;
-    margin-bottom: 8px;
     text-align: center;
 }
 
@@ -91,6 +102,16 @@ body {
 
 .regenerate-btn {
     background: #f0f0f0;
+}
+
+.save-pdf-btn {
+    background: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.save-pdf-btn:hover {
+    background: #4caf50;
+    color: white;
 }
 
 /* ==================== RIGHT PANEL - ITINERARY ==================== */
@@ -110,6 +131,8 @@ body {
     border: 1px solid #e0e0e0;
     border-left: 3px solid #d0d0d0;
     border-right: 3px solid #d0d0d0;
+    border-top: 2px dashed #ccc;
+    border-bottom: 2px dashed #ccc;
     padding: 30px 50px 30px 50px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     position: relative;
@@ -233,9 +256,9 @@ body {
     color: #666;
 }
 
-/* Stacking effect for multiple sheets - more subtle */
+/* Stacking effect for multiple sheets - no overlap to prevent hole punch collision */
 .day-sheet:nth-child(n+2) {
-    margin-top: -10px;
+    margin-top: 0px;
 }
 
 /* Print-friendly */
@@ -249,9 +272,27 @@ body {
         page-break-after: always;
     }
 
+    .action-buttons-container {
+        display: none;
+    }
+
+    .modification-panel {
+        display: none !important;
+    }
+
+    .sheet-overlay {
+        display: none !important;
+    }
+
     .day-sheet {
         page-break-inside: avoid;
         page-break-after: always;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .day-sheet.active {
+        transform: none !important;
     }
 }
 
@@ -264,11 +305,15 @@ body {
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 999;
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
 .sheet-overlay.active {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0s linear 0s;
 }
 
 /* Modification panel that appears below active sheet */
@@ -311,9 +356,16 @@ body {
         flex-direction: column;
     }
 
-    .budget-summary {
-        width: 100%;
+    .left-panel {
         position: relative;
         top: 0;
+    }
+
+    .budget-summary {
+        width: 100%;
+    }
+
+    .action-buttons-container {
+        width: 100%;
     }
 }
