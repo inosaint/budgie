@@ -7,6 +7,9 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="itinerary.css">
+
+    <!-- Scripts -->
+    <script src="sounds.js"></script>
 </head>
 <body>
     <div class="container">
@@ -68,8 +71,11 @@
             <!-- Action Buttons (Outside Receipt) -->
             <div class="action-buttons-container">
                 <button class="action-btn" onclick="window.location.href='index.html'">← Go Back to Calculator</button>
-                <button class="action-btn regenerate-btn" onclick="alert('Feature coming soon!')">🔄 Regenerate Itinerary</button>
+                <button class="action-btn regenerate-btn" onclick="regenerateItinerary()">🔄 Regenerate Itinerary</button>
                 <button class="action-btn save-pdf-btn" onclick="saveItineraryAsPDF()">📄 Save as PDF</button>
+                <button class="action-btn sound-toggle-btn" onclick="toggleSound(this)" id="soundToggle">
+                    <span class="sound-icon">🔊</span> Sound On
+                </button>
             </div>
         </div>
 

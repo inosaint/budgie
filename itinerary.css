@@ -116,6 +116,17 @@ body {
     color: white;
 }
 
+.sound-toggle-btn {
+    background: #fff3e0;
+    border-color: #ff9800;
+    font-size: 10px;
+}
+
+.sound-toggle-btn:hover {
+    background: #ff9800;
+    color: white;
+}
+
 /* ==================== RIGHT PANEL - ITINERARY ==================== */
 
 .itinerary-container {

@@ -771,6 +771,11 @@ function saveReceipt() {
     document.getElementById('receiptContent').innerHTML = receiptHTML;
     document.getElementById('receiptOverlay').classList.add('show');
 
+    // Play thermal printer sound
+    if (window.soundManager) {
+        window.soundManager.playThermalPrinter();
+    }
+
     // Add receipt to background stack
     addReceiptToBackground(receiptHTML);
 
