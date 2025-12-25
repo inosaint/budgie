@@ -1,0 +1,19 @@
+{
+  "name": "budgie",
+  "version": "1.0.0",
+  "description": "A retro-styled travel budget calculator with a vintage gameboy aesthetic",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -c-1 -o",
+    "dev": "npx live-server --port=3000 --open=index.html"
+  },
+  "keywords": [
+    "travel",
+    "budget",
+    "calculator",
+    "retro"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {}
+}
