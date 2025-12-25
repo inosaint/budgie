@@ -148,14 +148,40 @@ function renderItinerary() {
         const sheet = document.createElement('div');
         sheet.className = 'day-sheet';
 
-        // Add extra hole punches (beyond the ::before and ::after)
-        const holePunchPositions = [35, 50, 65, 80]; // percentage from top
-        holePunchPositions.forEach(position => {
-            const hole = document.createElement('div');
-            hole.className = 'hole-punch';
-            hole.style.top = `${position}%`;
-            sheet.appendChild(hole);
+        // Add hole punches on BOTH sides (tractor-feed paper style)
+        // Top and bottom positions are handled by ::before and ::after for left side
+        // We need to add them manually for the right side
+        const topBottomPositions = [20]; // 20px from top, bottom handled separately
+        const middlePositions = [35, 50, 65, 80]; // percentage from top
+
+        // Add middle hole punches on LEFT side
+        middlePositions.forEach(position => {
+            const holeLeft = document.createElement('div');
+            holeLeft.className = 'hole-punch hole-punch-left';
+            holeLeft.style.top = `${position}%`;
+            sheet.appendChild(holeLeft);
         });
+
+        // Add ALL hole punches on RIGHT side (including top/bottom)
+        // Top hole
+        const topHoleRight = document.createElement('div');
+        topHoleRight.className = 'hole-punch hole-punch-right';
+        topHoleRight.style.top = '20px';
+        sheet.appendChild(topHoleRight);
+
+        // Middle holes
+        middlePositions.forEach(position => {
+            const holeRight = document.createElement('div');
+            holeRight.className = 'hole-punch hole-punch-right';
+            holeRight.style.top = `${position}%`;
+            sheet.appendChild(holeRight);
+        });
+
+        // Bottom hole
+        const bottomHoleRight = document.createElement('div');
+        bottomHoleRight.className = 'hole-punch hole-punch-right';
+        bottomHoleRight.style.bottom = '20px';
+        sheet.appendChild(bottomHoleRight);
 
         // Sheet content
         const content = document.createElement('div');
