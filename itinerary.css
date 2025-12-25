@@ -109,25 +109,27 @@ body {
 
 .day-sheet {
     background: white;
-    border: 1px solid #ddd;
-    padding: 30px 40px 30px 30px;
-    box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.1),
-        0 4px 8px rgba(0, 0, 0, 0.05);
+    background-image:
+        radial-gradient(circle, rgba(0, 0, 0, 0.015) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    border: 1px solid #e0e0e0;
+    border-left: 3px solid #d0d0d0;
+    padding: 30px 40px 30px 50px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     position: relative;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
-/* Hole punches on the right side */
+/* Hole punches on the LEFT side (tractor-feed paper) */
 .day-sheet::before,
 .day-sheet::after {
     content: '';
     position: absolute;
-    right: 15px;
-    width: 8px;
-    height: 8px;
+    left: 12px;
+    width: 6px;
+    height: 6px;
     background: #f5f5f5;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 50%;
 }
 
@@ -142,11 +144,11 @@ body {
 /* Additional hole punches */
 .day-sheet .hole-punch {
     position: absolute;
-    right: 15px;
-    width: 8px;
-    height: 8px;
+    left: 12px;
+    width: 6px;
+    height: 6px;
     background: #f5f5f5;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 50%;
 }
 
@@ -169,7 +171,14 @@ body {
 
 .sheet-divider {
     border: none;
-    border-top: 1px dashed #333;
+    height: 1px;
+    background-image: repeating-linear-gradient(
+        to right,
+        #333 0px,
+        #333 4px,
+        transparent 4px,
+        transparent 8px
+    );
     margin: 15px 0;
 }
 
@@ -194,7 +203,7 @@ body {
 }
 
 .activity-description {
-    border-right: 1px solid #ddd;
+    border-right: 1px solid #ccc;
     padding-right: 15px;
 }
 
@@ -202,9 +211,9 @@ body {
     color: #666;
 }
 
-/* Stacking effect for multiple sheets */
+/* Stacking effect for multiple sheets - more subtle */
 .day-sheet:nth-child(n+2) {
-    margin-top: -5px;
+    margin-top: -10px;
 }
 
 /* Print-friendly */
