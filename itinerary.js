@@ -147,41 +147,16 @@ function renderItinerary() {
     dummyItinerary.days.forEach(dayData => {
         const sheet = document.createElement('div');
         sheet.className = 'day-sheet';
+        sheet.dataset.day = dayData.day;
 
-        // Add hole punches on BOTH sides (tractor-feed paper style)
-        // Top and bottom positions are handled by ::before and ::after for left side
-        // We need to add them manually for the right side
-        const topBottomPositions = [20]; // 20px from top, bottom handled separately
-        const middlePositions = [35, 50, 65, 80]; // percentage from top
+        // Add vertical lines parallel to hole punches
+        const leftLine = document.createElement('div');
+        leftLine.className = 'vertical-line-left';
+        sheet.appendChild(leftLine);
 
-        // Add middle hole punches on LEFT side
-        middlePositions.forEach(position => {
-            const holeLeft = document.createElement('div');
-            holeLeft.className = 'hole-punch hole-punch-left';
-            holeLeft.style.top = `${position}%`;
-            sheet.appendChild(holeLeft);
-        });
-
-        // Add ALL hole punches on RIGHT side (including top/bottom)
-        // Top hole
-        const topHoleRight = document.createElement('div');
-        topHoleRight.className = 'hole-punch hole-punch-right';
-        topHoleRight.style.top = '20px';
-        sheet.appendChild(topHoleRight);
-
-        // Middle holes
-        middlePositions.forEach(position => {
-            const holeRight = document.createElement('div');
-            holeRight.className = 'hole-punch hole-punch-right';
-            holeRight.style.top = `${position}%`;
-            sheet.appendChild(holeRight);
-        });
-
-        // Bottom hole
-        const bottomHoleRight = document.createElement('div');
-        bottomHoleRight.className = 'hole-punch hole-punch-right';
-        bottomHoleRight.style.bottom = '20px';
-        sheet.appendChild(bottomHoleRight);
+        const rightLine = document.createElement('div');
+        rightLine.className = 'vertical-line-right';
+        sheet.appendChild(rightLine);
 
         // Sheet content
         const content = document.createElement('div');
@@ -203,8 +178,115 @@ function renderItinerary() {
         `;
 
         sheet.appendChild(content);
+
+        // Add modification panel
+        const modPanel = document.createElement('div');
+        modPanel.className = 'modification-panel';
+        modPanel.innerHTML = `
+            <button onclick="regenerateDay(${dayData.day})">🔄 Regenerate Day ${dayData.day}</button>
+            <button onclick="editDay(${dayData.day})">✏️ Edit Day</button>
+            <button onclick="closeSheet()">✕ Close</button>
+        `;
+        sheet.appendChild(modPanel);
+
         container.appendChild(sheet);
+
+        // Add click handler for active state
+        sheet.addEventListener('click', function(e) {
+            if (!e.target.closest('.modification-panel')) {
+                toggleSheetActive(sheet);
+            }
+        });
     });
+
+    // Add hole punches after sheets are rendered (so we can calculate height)
+    setTimeout(addDynamicHolePunches, 100);
+}
+
+// Add hole punches dynamically based on card height
+function addDynamicHolePunches() {
+    const sheets = document.querySelectorAll('.day-sheet');
+
+    sheets.forEach(sheet => {
+        const height = sheet.offsetHeight;
+        const holePunchSpacing = 60; // Space between hole punches in pixels
+        const marginTop = 20; // Top margin for first hole
+        const marginBottom = 20; // Bottom margin for last hole
+
+        // Calculate how many holes we need
+        const availableHeight = height - marginTop - marginBottom;
+        const numHoles = Math.floor(availableHeight / holePunchSpacing) + 2; // +2 for top and bottom
+
+        // Add holes on both sides
+        for (let i = 0; i < numHoles; i++) {
+            const position = marginTop + (i * holePunchSpacing);
+
+            // Left side hole
+            const holeLeft = document.createElement('div');
+            holeLeft.className = 'hole-punch hole-punch-left';
+            holeLeft.style.top = `${position}px`;
+            sheet.appendChild(holeLeft);
+
+            // Right side hole
+            const holeRight = document.createElement('div');
+            holeRight.className = 'hole-punch hole-punch-right';
+            holeRight.style.top = `${position}px`;
+            sheet.appendChild(holeRight);
+        }
+    });
+}
+
+// Toggle sheet active state
+function toggleSheetActive(sheet) {
+    const isActive = sheet.classList.contains('active');
+
+    // Close all other sheets
+    document.querySelectorAll('.day-sheet').forEach(s => {
+        s.classList.remove('active');
+    });
+
+    // Toggle overlay
+    const overlay = getOrCreateOverlay();
+
+    if (isActive) {
+        sheet.classList.remove('active');
+        overlay.classList.remove('active');
+    } else {
+        sheet.classList.add('active');
+        overlay.classList.add('active');
+    }
+}
+
+// Get or create overlay
+function getOrCreateOverlay() {
+    let overlay = document.querySelector('.sheet-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'sheet-overlay';
+        overlay.addEventListener('click', closeSheet);
+        document.body.appendChild(overlay);
+    }
+    return overlay;
+}
+
+// Close active sheet
+function closeSheet() {
+    document.querySelectorAll('.day-sheet').forEach(s => {
+        s.classList.remove('active');
+    });
+    const overlay = document.querySelector('.sheet-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+}
+
+// Placeholder functions for modification actions
+function regenerateDay(day) {
+    alert(`Regenerating Day ${day}... (Feature coming soon)`);
+}
+
+function editDay(day) {
+    alert(`Editing Day ${day}... (Feature coming soon)`);
 }
 
 // Initialize on page load

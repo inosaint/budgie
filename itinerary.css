@@ -29,73 +29,68 @@ body {
     position: sticky;
     top: 20px;
     height: fit-content;
-}
-
-.summary-header {
-    margin-bottom: 10px;
-}
-
-.budgie-logo {
-    font-size: 24px;
-    font-weight: bold;
-    letter-spacing: 2px;
-}
-
-.summary-subtitle {
-    font-size: 12px;
-    text-align: center;
-    margin-bottom: 8px;
-}
-
-.summary-divider {
-    font-size: 10px;
-    letter-spacing: 0;
-    margin: 8px 0;
-    overflow: hidden;
-}
-
-.summary-content {
-    font-size: 11px;
+    font-size: 13px;
     line-height: 1.6;
 }
 
-.summary-row {
+/* Receipt styles matching calculator */
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed #333;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.receipt-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+.receipt-item {
     display: flex;
     justify-content: space-between;
-    margin: 4px 0;
+    margin: 8px 0;
 }
 
-.summary-row.total {
+.receipt-total {
+    border-top: 2px solid #333;
+    border-bottom: 2px solid #333;
+    margin: 15px 0;
+    padding: 10px 0;
     font-weight: bold;
-    font-size: 13px;
-    margin-top: 8px;
+    font-size: 14px;
 }
 
-.summary-row.actual {
+.receipt-footer {
+    text-align: center;
+    margin-top: 15px;
     font-size: 10px;
     color: #666;
-}
-
-.summary-actions {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    line-height: 1.4;
 }
 
 .action-btn {
     background: white;
     border: 2px solid #333;
-    padding: 8px 12px;
+    padding: 10px 12px;
     font-family: 'Courier New', monospace;
-    font-size: 10px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.1s;
+    width: 100%;
+    margin-bottom: 8px;
+    text-align: center;
 }
 
 .action-btn:hover {
     background: #333;
     color: white;
+}
+
+.regenerate-btn {
+    background: #f0f0f0;
 }
 
 /* ==================== RIGHT PANEL - ITINERARY ==================== */
@@ -119,38 +114,54 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     position: relative;
     margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-/* Hole punches on BOTH sides (tractor-feed paper) */
-/* Top and bottom holes on LEFT */
-.day-sheet::before,
-.day-sheet::after {
-    content: '';
+/* Hover state - lift up the paper */
+.day-sheet:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+}
+
+/* Active/clicked state */
+.day-sheet.active {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+}
+
+/* Vertical lines parallel to hole punches */
+.day-sheet .vertical-line-left {
     position: absolute;
-    left: 12px;
-    width: 6px;
-    height: 6px;
-    background: #f5f5f5;
-    border: 1px solid #ccc;
-    border-radius: 50%;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #ddd;
+    z-index: 0;
 }
 
-.day-sheet::before {
-    top: 20px;
+.day-sheet .vertical-line-right {
+    position: absolute;
+    right: 28px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #ddd;
+    z-index: 0;
 }
 
-.day-sheet::after {
-    bottom: 20px;
-}
-
-/* Additional hole punches - base styles */
+/* Hole punches on BOTH sides (tractor-feed paper) - increased to 8px */
 .day-sheet .hole-punch {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     background: #f5f5f5;
     border: 1px solid #ccc;
     border-radius: 50%;
+    z-index: 1;
 }
 
 /* Left side hole punches */
@@ -242,6 +253,56 @@ body {
         page-break-inside: avoid;
         page-break-after: always;
     }
+}
+
+/* Overlay for when a sheet is clicked */
+.sheet-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.sheet-overlay.active {
+    display: block;
+}
+
+/* Modification panel that appears below active sheet */
+.modification-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #333;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1001;
+}
+
+.day-sheet.active .modification-panel {
+    display: block;
+}
+
+.modification-panel button {
+    background: white;
+    border: 2px solid #333;
+    padding: 8px 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: all 0.1s;
+}
+
+.modification-panel button:hover {
+    background: #333;
+    color: white;
 }
 
 /* Responsive */
