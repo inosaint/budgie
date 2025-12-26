@@ -35,6 +35,9 @@ Create a `.env` file in the project root (it's already created, just edit it):
 ```bash
 # .env file
 budgie=sk-ant-api03-xxxxx  # Replace with your actual Claude API key
+
+# Optional: Specify Claude model version (defaults to claude-3-5-sonnet-20240620)
+# CLAUDE_MODEL=claude-3-5-sonnet-20240620
 ```
 
 **Important:**
@@ -171,6 +174,34 @@ Netlify CLI shows function logs in the terminal:
 Request from ::1: POST /.netlify/functions/generate-itinerary
 Response with status 200 in 3456 ms
 ```
+
+## Changing Claude Models
+
+The function uses **claude-3-5-sonnet-20240620** by default, but you can change it:
+
+### Available Models
+
+```bash
+# In your .env file, add:
+
+# Fast and cheap (recommended for testing)
+CLAUDE_MODEL=claude-3-haiku-20240307
+
+# Balanced (default)
+CLAUDE_MODEL=claude-3-5-sonnet-20240620
+
+# Most capable (higher cost)
+CLAUDE_MODEL=claude-3-opus-20240229
+```
+
+### Why Change Models?
+
+- **Testing**: Use Haiku to save API costs during development
+- **Performance**: Use Opus for highest quality itineraries
+- **Compatibility**: Use a model your API key has access to
+- **Cost Control**: Haiku is ~50x cheaper than Opus per request
+
+After changing the model in `.env`, restart `npm run netlify`.
 
 ## Comparing Local vs Production
 
