@@ -273,15 +273,30 @@ body {
     margin-top: 0px;
 }
 
-/* Print-friendly */
+/* Print-friendly - compact and continuous layout */
 @media print {
     body {
         background: white;
         padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        display: block;
+    }
+
+    .left-panel {
+        position: relative;
+        width: 100%;
+        top: 0;
     }
 
     .budget-summary {
-        page-break-after: always;
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+        width: 100%;
+        max-width: 100%;
+        padding: 15px;
     }
 
     .action-buttons-container {
@@ -296,15 +311,42 @@ body {
         display: none !important;
     }
 
+    .itinerary-container {
+        width: 100%;
+    }
+
+    #itinerarySheets {
+        display: block;
+    }
+
     .day-sheet {
         page-break-inside: avoid;
-        page-break-after: always;
+        page-break-after: auto;
         transform: none !important;
         box-shadow: none !important;
+        margin-bottom: 15px;
+        width: 100%;
+        max-width: 100%;
+        padding: 20px 40px;
     }
 
     .day-sheet.active {
         transform: none !important;
+    }
+
+    .day-sheet:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Compact activity items for printing */
+    .activity-item {
+        margin-bottom: 8px;
+    }
+
+    /* Ensure hole punches and decorative elements print */
+    .hole-punch {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
     }
 }
 
