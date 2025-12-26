@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx http-server -p 3000 -c-1 -o",
     "dev": "npx live-server --port=3000 --open=index.html",
-    "netlify": "netlify dev"
+    "netlify": "npx netlify dev"
   },
   "keywords": [
     "travel",
