@@ -337,18 +337,16 @@ async function regenerateItinerary() {
 
     const tripData = JSON.parse(tripDataStr);
 
-    // Check if we're on Netlify deployment
-    const isNetlifyDeployment = window.location.hostname.includes('netlify.app') ||
-                                 (window.location.protocol !== 'file:' &&
-                                  window.location.hostname !== 'localhost' &&
-                                  window.location.hostname !== '127.0.0.1');
+    // Check if Netlify functions are available
+    const hasNetlifyFunctions = window.location.hostname.includes('netlify.app') ||
+                                 window.location.port === '8888';
 
-    if (isNetlifyDeployment) {
+    if (hasNetlifyFunctions) {
         // Fetch new itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Local development - use dummy data
-        alert('Running locally - API not available. Please deploy to Netlify.');
+        // Local development without Netlify Dev - use dummy data
+        alert('Netlify functions not available. Run with `netlify dev` or deploy to Netlify.');
         currentItinerary = dummyItinerary;
         renderItinerary();
     }
@@ -412,19 +410,17 @@ async function initializePage() {
         console.error('[SOUND DEBUG] ERROR playing sound:', error);
     }
 
-    // Check if we're on Netlify deployment (not localhost or file://)
-    // Only use API when deployed to Netlify
-    const isNetlifyDeployment = window.location.hostname.includes('netlify.app') ||
-                                 (window.location.protocol !== 'file:' &&
-                                  window.location.hostname !== 'localhost' &&
-                                  window.location.hostname !== '127.0.0.1');
+    // Check if Netlify functions are available
+    // True when: deployed to netlify.app OR running Netlify Dev (localhost:8888)
+    const hasNetlifyFunctions = window.location.hostname.includes('netlify.app') ||
+                                 window.location.port === '8888';
 
-    if (isNetlifyDeployment) {
+    if (hasNetlifyFunctions) {
         // Show loading state and fetch itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Local development or file:// - use dummy data
-        console.log('Not on Netlify deployment, using dummy data');
+        // Local development without Netlify Dev - use dummy data
+        console.log('Netlify functions not available, using dummy data');
         currentItinerary = dummyItinerary;
         renderItinerary();
     }
