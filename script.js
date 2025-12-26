@@ -1388,6 +1388,69 @@ function deleteStackedReceipt(receiptId, event) {
     }
 }
 
+function generateItinerary() {
+    // Check if there's a calculation to generate itinerary from
+    if (!lastCalculation) {
+        showError('No Trip Data', 'Please enter trip details and calculate before generating an itinerary.');
+        return;
+    }
+
+    const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, accommodation } = lastCalculation;
+    const currency = document.getElementById('currency').value;
+    const symbol = currencySymbols[currency];
+    const enableTravelDates = document.getElementById('enableTravelDates').checked;
+    const startDate = enableTravelDates ? document.getElementById('startDate').value : '';
+    const endDate = enableTravelDates ? document.getElementById('endDate').value : '';
+
+    // Validate required fields
+    if (!source || !destination) {
+        showError('Incomplete Trip Data', 'Please provide both source and destination before generating an itinerary.');
+        return;
+    }
+
+    // Format dates for display
+    let dateDisplay = '';
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const options = { month: 'short', day: 'numeric', year: 'numeric' };
+        dateDisplay = `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+    } else {
+        // Generate default dates (e.g., 2 months from now)
+        const start = new Date();
+        start.setMonth(start.getMonth() + 2);
+        const end = new Date(start);
+        end.setDate(end.getDate() + duration - 1);
+        const options = { month: 'short', day: 'numeric', year: 'numeric' };
+        dateDisplay = `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+    }
+
+    // Prepare trip data for API
+    const tripData = {
+        source,
+        destination,
+        duration,
+        budget: accommodation, // budget tier (budget/moderate/comfort/luxury)
+        travelers: people,
+        dates: dateDisplay,
+        flights: `${symbol}${Math.round(flightCost).toLocaleString()}`,
+        accommodation: `${symbol}${Math.round(accommodationCost).toLocaleString()}`,
+        meals: `${symbol}${Math.round(mealCost).toLocaleString()}`,
+        activities: `${symbol}${Math.round(activityCost).toLocaleString()}`,
+        total: `${symbol}${Math.round(totalCost).toLocaleString()}`,
+        perPerson: `${symbol}${Math.round(totalCost / people).toLocaleString()}`,
+        nights: Math.max(duration - 1, 1),
+        perDay: `${symbol}${Math.round(totalCost / duration).toLocaleString()}`,
+        route: `${source} → ${destination}`
+    };
+
+    // Store trip data in localStorage for itinerary page
+    localStorage.setItem('budgieTripData', JSON.stringify(tripData));
+
+    // Open itinerary page
+    window.open('itinerary.html', '_blank');
+}
+
 // Initialize
 setTodayAsMinDate();
 updateAccommodationLabels();

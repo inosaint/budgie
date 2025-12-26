@@ -42,9 +42,9 @@ exports.handler = async (event, context) => {
     }
 
     // Get Claude API key from environment variable
-    const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+    const CLAUDE_API_KEY = process.env.budgie;
     if (!CLAUDE_API_KEY) {
-      console.error('CLAUDE_API_KEY not set in environment variables');
+      console.error('budgie environment variable not set');
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Server configuration error' })
