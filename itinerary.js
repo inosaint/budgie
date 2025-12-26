@@ -366,6 +366,11 @@ async function initializePage() {
     // Update budget summary with real data
     updateBudgetSummary(tripData);
 
+    // Play dot matrix printer sound for initial generation
+    if (window.soundManager) {
+        window.soundManager.playDotMatrixPrinter(2);
+    }
+
     // Check if we should use the API or dummy data
     // If API_ENDPOINT is localhost or the function exists, try to use it
     const useAPI = window.location.hostname !== 'file://';
@@ -448,11 +453,6 @@ async function fetchItineraryFromAPI(tripData) {
 
 // Show loading state while API is working
 function showLoadingState() {
-    // Play dot matrix printer sound
-    if (window.soundManager) {
-        window.soundManager.playDotMatrixPrinter(2);
-    }
-
     const container = document.getElementById('itinerarySheets');
     container.innerHTML = `
         <div class="loading-container" style="
