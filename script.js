@@ -369,17 +369,25 @@ function calculateDistance(city1, city2) {
 function setupAutocompleteForField(fieldId, listId) {
     const input = document.getElementById(fieldId);
     const autocompleteList = document.getElementById(listId);
-    
+
     input.addEventListener('input', function() {
         const val = this.value.toLowerCase();
         closeAutocompleteList(listId);
         currentFocus = -1;
-        
+
         if (!val) return;
-        
-        let matches = Object.keys(destinations).filter(dest => 
-            dest.toLowerCase().includes(val)
-        );
+
+        // Get the other field's value to exclude it
+        const otherFieldId = fieldId === 'source' ? 'destination' : 'source';
+        const otherValue = document.getElementById(otherFieldId).value.trim();
+
+        let matches = Object.keys(destinations).filter(dest => {
+            // Exclude if it matches the value in the other field
+            if (otherValue && dest.toLowerCase() === otherValue.toLowerCase()) {
+                return false;
+            }
+            return dest.toLowerCase().includes(val);
+        });
         
         // Sort by distance if this is destination field and source is provided
         if (fieldId === 'destination') {
@@ -576,8 +584,8 @@ function updateAccommodationLabels() {
 }
 
 function calculate() {
-    const source = document.getElementById('source').value;
-    const destination = document.getElementById('destination').value;
+    const source = document.getElementById('source').value.trim();
+    const destination = document.getElementById('destination').value.trim();
     const duration = parseInt(document.getElementById('duration').value) || 0;
     const people = parseInt(document.getElementById('people').value) || 1;
     const accommodation = document.getElementById('accommodation').value;
@@ -587,9 +595,17 @@ function calculate() {
     const currency = document.getElementById('currency').value;
     const includeDailyExpense = document.getElementById('includeDailyExpense').checked;
     const errorDiv = document.getElementById('dateError');
-    
+
     // Clear previous errors
     errorDiv.textContent = '';
+
+    // Check if source and destination are the same
+    if (source && destination && source.toLowerCase() === destination.toLowerCase()) {
+        errorDiv.textContent = '⚠️ Source and destination cannot be the same location';
+        errorDiv.style.display = 'block';
+        document.getElementById('output').innerHTML = '';
+        return;
+    }
 
     // Check if end date is before start date
     if (enableTravelDates && startDate && endDate) {
@@ -770,6 +786,11 @@ function saveReceipt() {
     
     document.getElementById('receiptContent').innerHTML = receiptHTML;
     document.getElementById('receiptOverlay').classList.add('show');
+
+    // Play thermal printer sound
+    if (window.soundManager) {
+        window.soundManager.playThermalPrinter();
+    }
 
     // Add receipt to background stack
     addReceiptToBackground(receiptHTML);

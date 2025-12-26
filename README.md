@@ -15,7 +15,15 @@ budgie-calculator/
 ## 🚀 Quick Start
 
 ### Local Development
+
+**Option 1: Direct File (No Setup Required)**
 Simply open `index.html` in your browser. No build process or server required!
+
+**Option 2: Development Server (Recommended)**
+```bash
+npm start
+```
+This will start a local server at `http://localhost:3000` with live reloading.
 
 ### GitHub Pages Deployment
 1. Create a new GitHub repository

@@ -1,0 +1,382 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+    background: #f5f5f5;
+    padding: 20px;
+    color: #2c2c2c;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+    display: flex;
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ==================== LEFT PANEL ==================== */
+
+.left-panel {
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+.budget-summary {
+    width: 380px;
+    background: white;
+    border: 2px solid #333;
+    padding: 20px;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* Receipt styles matching calculator */
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed #333;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.receipt-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+.receipt-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+}
+
+.receipt-total {
+    border-top: 2px solid #333;
+    border-bottom: 2px solid #333;
+    margin: 15px 0;
+    padding: 10px 0;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.receipt-footer {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 10px;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Action buttons container (outside receipt) */
+.action-buttons-container {
+    width: 380px;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-btn {
+    background: white;
+    border: 2px solid #333;
+    padding: 10px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.1s;
+    width: 100%;
+    text-align: center;
+}
+
+.action-btn:hover {
+    background: #333;
+    color: white;
+}
+
+.regenerate-btn {
+    background: #f0f0f0;
+}
+
+.save-pdf-btn {
+    background: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.save-pdf-btn:hover {
+    background: #4caf50;
+    color: white;
+}
+
+/* ==================== RIGHT PANEL - ITINERARY ==================== */
+
+.itinerary-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.day-sheet {
+    background: white;
+    background-image:
+        radial-gradient(circle, rgba(0, 0, 0, 0.015) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    border: 1px solid #e0e0e0;
+    border-left: 3px solid #d0d0d0;
+    border-right: 3px solid #d0d0d0;
+    border-top: 2px dashed #ccc;
+    border-bottom: 2px dashed #ccc;
+    padding: 30px 50px 30px 50px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    position: relative;
+    margin-bottom: 5px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease;
+}
+
+/* Hover state - lift up the paper */
+.day-sheet:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.day-sheet:hover:not(.active) {
+    z-index: 10;
+}
+
+/* Active/clicked state - completely re-implemented */
+.day-sheet.active {
+    position: relative;
+    z-index: 1000;
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    will-change: transform, box-shadow;
+}
+
+/* Vertical lines parallel to hole punches */
+.day-sheet .vertical-line-left {
+    position: absolute;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #ddd;
+    z-index: 0;
+}
+
+.day-sheet .vertical-line-right {
+    position: absolute;
+    right: 28px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #ddd;
+    z-index: 0;
+}
+
+/* Hole punches on BOTH sides (tractor-feed paper) - increased to 8px */
+.day-sheet .hole-punch {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+/* Left side hole punches */
+.day-sheet .hole-punch-left {
+    left: 12px;
+}
+
+/* Right side hole punches */
+.day-sheet .hole-punch-right {
+    right: 12px;
+}
+
+.sheet-header {
+    margin-bottom: 15px;
+}
+
+.sheet-title {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+    color: #1a1a1a;
+}
+
+.sheet-day {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 10px;
+    font-weight: 400;
+}
+
+.sheet-divider {
+    border: none;
+    height: 1px;
+    background-image: repeating-linear-gradient(
+        to right,
+        #333 0px,
+        #333 4px,
+        transparent 4px,
+        transparent 8px
+    );
+    margin: 15px 0;
+}
+
+.activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.activity-item {
+    display: grid;
+    grid-template-columns: 30px 1fr 1fr;
+    gap: 15px;
+    font-size: 12px;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+}
+
+.activity-icon {
+    font-size: 18px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.activity-description {
+    border-right: 1px solid #ccc;
+    padding-right: 15px;
+}
+
+.activity-notes {
+    color: #666;
+}
+
+/* Stacking effect for multiple sheets - no overlap to prevent hole punch collision */
+.day-sheet:nth-child(n+2) {
+    margin-top: 0px;
+}
+
+/* Print-friendly */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .budget-summary {
+        page-break-after: always;
+    }
+
+    .action-buttons-container {
+        display: none;
+    }
+
+    .modification-panel {
+        display: none !important;
+    }
+
+    .sheet-overlay {
+        display: none !important;
+    }
+
+    .day-sheet {
+        page-break-inside: avoid;
+        page-break-after: always;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .day-sheet.active {
+        transform: none !important;
+    }
+}
+
+/* Overlay for when a sheet is clicked - re-implemented for instant appearance */
+.sheet-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: -1;
+    pointer-events: none;
+    transition: background 0.25s ease;
+}
+
+.sheet-overlay.active {
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    pointer-events: all;
+}
+
+/* Modification panel that appears below active sheet */
+.modification-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #333;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1001;
+}
+
+.day-sheet.active .modification-panel {
+    display: block;
+}
+
+.modification-panel button {
+    background: white;
+    border: 2px solid #333;
+    padding: 8px 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: all 0.1s;
+}
+
+.modification-panel button:hover {
+    background: #333;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .left-panel {
+        position: relative;
+        top: 0;
+    }
+
+    .budget-summary {
+        width: 100%;
+    }
+
+    .action-buttons-container {
+        width: 100%;
+    }
+}

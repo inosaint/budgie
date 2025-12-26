@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budgie - Travel Itinerary</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="itinerary.css">
+
+    <!-- Scripts -->
+    <script src="sounds.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Budget Summary Receipt -->
+            <div class="budget-summary">
+            <div class="receipt-header">
+                <div class="receipt-title">BUDGIE</div>
+                <div>Budget Travel Estimate</div>
+                <div style="font-size: 10px; margin-top: 5px;" id="summaryDate">12/25/2025</div>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <strong>Route:</strong> <span id="summaryRoute">Bangalore → Auckland</span><br>
+                <strong>Duration:</strong> <span id="summaryDuration">7 days</span><br>
+                <strong>Date Range:</strong> <span id="summaryDates">Dec 3, 2023 - Dec 9, 2023</span><br>
+                <strong>Travelers:</strong> <span id="summaryTravelers">2</span>
+            </div>
+
+            <div class="receipt-item">
+                <span>Flights:</span>
+                <span id="summaryFlights">₹712,721</span>
+            </div>
+            <div class="receipt-item">
+                <span>Stay (<span id="summaryNights">6</span>n):</span>
+                <span id="summaryAccom">₹31,818</span>
+            </div>
+            <div class="receipt-item">
+                <span>Meals:</span>
+                <span id="summaryMeals">₹41,455</span>
+            </div>
+            <div class="receipt-item">
+                <span>Local expenses:</span>
+                <span id="summaryActivities">₹14,523</span>
+            </div>
+            <div class="receipt-item">
+                <span>Per Day Average:</span>
+                <span id="summaryPerDay">₹14,602</span>
+            </div>
+
+            <div class="receipt-total">
+                <div class="receipt-item">
+                    <span>TOTAL:</span>
+                    <span id="summaryTotal">₹827,858</span>
+                </div>
+                <div class="receipt-item" style="font-size: 12px; font-weight: normal;">
+                    <span>Per Person:</span>
+                    <span id="summaryPerPerson">₹413,929</span>
+                </div>
+            </div>
+
+            <div class="receipt-footer">
+                <div>Estimates may vary by season</div>
+                <div>Thank you for using Budgie!</div>
+            </div>
+        </div>
+
+            <!-- Action Buttons (Outside Receipt) -->
+            <div class="action-buttons-container">
+                <button class="action-btn" onclick="window.location.href='index.html'">← Go Back to Calculator</button>
+                <button class="action-btn regenerate-btn" onclick="regenerateItinerary()">🔄 Regenerate Itinerary</button>
+                <button class="action-btn save-pdf-btn" onclick="saveItineraryAsPDF()">📄 Save as PDF</button>
+            </div>
+        </div>
+
+        <!-- Right Panel - Itinerary -->
+        <div class="itinerary-container">
+            <div id="itinerarySheets">
+                <!-- Day sheets will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="itinerary.js"></script>
+</body>
+</html>
