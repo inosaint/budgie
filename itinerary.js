@@ -144,7 +144,13 @@ function renderItinerary() {
     const container = document.getElementById('itinerarySheets');
     const route = document.getElementById('summaryRoute').textContent;
 
-    dummyItinerary.days.forEach(dayData => {
+    // Use currentItinerary if available, otherwise fallback to dummy data
+    const itinerary = currentItinerary || dummyItinerary;
+
+    // Clear container first
+    container.innerHTML = '';
+
+    itinerary.days.forEach(dayData => {
         const sheet = document.createElement('div');
         sheet.className = 'day-sheet';
         sheet.dataset.day = dayData.day;
@@ -294,17 +300,222 @@ function editDay(day) {
 }
 
 // Regenerate full itinerary
-function regenerateItinerary() {
+async function regenerateItinerary() {
     // Play dot matrix printer sound
     if (window.soundManager) {
         window.soundManager.playDotMatrixPrinter(2.5);
     }
-    alert('Regenerating full itinerary... (Feature coming soon)');
+
+    // Get trip data from localStorage
+    const tripDataStr = localStorage.getItem('budgieTripData');
+
+    if (!tripDataStr) {
+        alert('No trip data found. Please return to the calculator and generate a new itinerary.');
+        return;
+    }
+
+    const tripData = JSON.parse(tripDataStr);
+
+    // Check if we're deployed (can use API)
+    const useAPI = window.location.hostname !== 'file://';
+
+    if (useAPI) {
+        // Fetch new itinerary from API
+        await fetchItineraryFromAPI(tripData);
+    } else {
+        // Local development - just re-render dummy data
+        alert('Running locally - using dummy data. Deploy to Netlify to use Claude API.');
+        currentItinerary = dummyItinerary;
+        renderItinerary();
+    }
 }
 
 // Save itinerary as PDF
 function saveItineraryAsPDF() {
     window.print();
+}
+
+// API endpoint configuration
+// When deployed to Netlify, this will be the serverless function endpoint
+const API_ENDPOINT = '/.netlify/functions/generate-itinerary';
+
+// Global variable to store the current itinerary
+let currentItinerary = null;
+
+// Load trip data from localStorage and initialize page
+async function initializePage() {
+    // Load trip data from localStorage
+    const tripDataStr = localStorage.getItem('budgieTripData');
+
+    if (!tripDataStr) {
+        // No trip data found - use dummy data
+        console.log('No trip data found in localStorage, using dummy data');
+        updateBudgetSummary(null);
+        currentItinerary = dummyItinerary;
+        renderItinerary();
+        return;
+    }
+
+    const tripData = JSON.parse(tripDataStr);
+
+    // Update budget summary with real data
+    updateBudgetSummary(tripData);
+
+    // Check if we should use the API or dummy data
+    // If API_ENDPOINT is localhost or the function exists, try to use it
+    const useAPI = window.location.hostname !== 'file://';
+
+    if (useAPI) {
+        // Show loading state and fetch itinerary from API
+        await fetchItineraryFromAPI(tripData);
+    } else {
+        // Local development - use dummy data
+        console.log('Running locally, using dummy data');
+        currentItinerary = dummyItinerary;
+        renderItinerary();
+    }
+}
+
+// Update budget summary section with trip data
+function updateBudgetSummary(tripData) {
+    if (!tripData) {
+        // Use default dummy values
+        return;
+    }
+
+    // Update all summary fields
+    document.getElementById('summaryRoute').textContent = tripData.route;
+    document.getElementById('summaryDuration').textContent = `${tripData.duration} days`;
+    document.getElementById('summaryDates').textContent = tripData.dates;
+    document.getElementById('summaryTravelers').textContent = tripData.travelers;
+    document.getElementById('summaryFlights').textContent = tripData.flights;
+    document.getElementById('summaryNights').textContent = tripData.nights;
+    document.getElementById('summaryAccom').textContent = tripData.accommodation;
+    document.getElementById('summaryMeals').textContent = tripData.meals;
+    document.getElementById('summaryActivities').textContent = tripData.activities;
+    document.getElementById('summaryPerDay').textContent = tripData.perDay;
+    document.getElementById('summaryTotal').textContent = tripData.total;
+    document.getElementById('summaryPerPerson').textContent = tripData.perPerson;
+
+    // Update date
+    const today = new Date().toLocaleDateString();
+    document.getElementById('summaryDate').textContent = today;
+}
+
+// Fetch itinerary from Claude API via Netlify Function
+async function fetchItineraryFromAPI(tripData) {
+    try {
+        showLoadingState();
+
+        // Call the serverless function
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(tripData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.itinerary) {
+            currentItinerary = data.itinerary;
+            hideLoadingState();
+            renderItinerary();
+        } else {
+            throw new Error('Invalid response from API');
+        }
+
+    } catch (error) {
+        console.error('Error fetching itinerary:', error);
+        hideLoadingState();
+        showErrorState(error);
+
+        // Fallback to dummy data
+        currentItinerary = dummyItinerary;
+        renderItinerary();
+    }
+}
+
+// Show loading state while API is working
+function showLoadingState() {
+    const container = document.getElementById('itinerarySheets');
+    container.innerHTML = `
+        <div class="loading-container" style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            padding: 40px;
+            color: #666;
+        ">
+            <div class="loading-spinner" style="
+                width: 60px;
+                height: 60px;
+                border: 4px solid #e0e0e0;
+                border-top: 4px solid #333;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+            "></div>
+            <div style="font-size: 18px; margin-bottom: 10px;">
+                🖨️ Generating your itinerary...
+            </div>
+            <div style="font-size: 14px; color: #999;">
+                Claude is planning your perfect trip
+            </div>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+}
+
+// Hide loading state
+function hideLoadingState() {
+    // Loading will be replaced by renderItinerary
+}
+
+// Show error state if API fails
+function showErrorState(error) {
+    const container = document.getElementById('itinerarySheets');
+    const errorHTML = `
+        <div class="error-container" style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            padding: 40px;
+            color: #666;
+        ">
+            <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+            <div style="font-size: 18px; margin-bottom: 10px; color: #d32f2f;">
+                Failed to generate itinerary
+            </div>
+            <div style="font-size: 14px; color: #999; margin-bottom: 20px; text-align: center; max-width: 500px;">
+                ${error.message || 'An error occurred while generating your itinerary.'}
+            </div>
+            <div style="font-size: 14px; color: #999; margin-bottom: 20px;">
+                Showing sample itinerary instead...
+            </div>
+        </div>
+    `;
+
+    // Show error briefly before showing dummy data
+    container.innerHTML = errorHTML;
+
+    setTimeout(() => {
+        renderItinerary();
+    }, 2000);
 }
 
 // Initialize on page load
@@ -314,5 +525,5 @@ document.addEventListener('DOMContentLoaded', () => {
         window.soundManager.playDotMatrixPrinter(2.5);
     }
 
-    renderItinerary();
+    initializePage();
 });

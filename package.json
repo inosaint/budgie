@@ -1,19 +1,26 @@
 {
   "name": "budgie",
   "version": "1.0.0",
-  "description": "A retro-styled travel budget calculator with a vintage gameboy aesthetic",
+  "description": "AI-powered travel budget calculator and itinerary generator with retro aesthetic",
   "main": "index.html",
   "scripts": {
     "start": "npx http-server -p 3000 -c-1 -o",
-    "dev": "npx live-server --port=3000 --open=index.html"
+    "dev": "npx live-server --port=3000 --open=index.html",
+    "netlify": "netlify dev"
   },
   "keywords": [
     "travel",
     "budget",
     "calculator",
-    "retro"
+    "retro",
+    "ai",
+    "claude",
+    "itinerary"
   ],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
   "devDependencies": {}
 }

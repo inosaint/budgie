@@ -1,0 +1,95 @@
+# Netlify Configuration for Budgie
+# AI-powered travel itinerary generator
+
+[build]
+  # No build command needed - this is a static site
+  command = ""
+
+  # Publish the root directory (all files)
+  publish = "."
+
+  # Functions directory
+  functions = "netlify/functions"
+
+[build.environment]
+  # Node version for serverless functions
+  NODE_VERSION = "18"
+
+# Redirects and rewrites
+[[redirects]]
+  # SPA fallback (optional, for future use)
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+  # Don't apply SPA fallback to function calls
+  conditions = {Role = ["admin", "editor"]}
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Cache static assets
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    # Don't cache HTML files
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    # CORS headers for API endpoint
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"
+
+    # Don't cache API responses
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# Plugin configuration (optional)
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+
+  # Lighthouse configuration
+  [plugins.inputs.thresholds]
+    performance = 0.8
+    accessibility = 0.9
+    best-practices = 0.8
+    seo = 0.9
+
+# Development settings
+[dev]
+  # Local development port
+  port = 8888
+
+  # Auto-open browser
+  autoLaunch = true
+
+  # Functions port
+  functionsPort = 9999
+
+  # Target port (if running another server)
+  targetPort = 3000
+
+# Context-specific settings
+[context.production]
+  # Production environment variables can be set here
+  # (but prefer using Netlify Dashboard for secrets)
+
+[context.deploy-preview]
+  # Deploy preview settings
+  # Useful for testing PRs before merging
+
+[context.branch-deploy]
+  # Branch deploy settings
+  # Automatically deploy specific branches
