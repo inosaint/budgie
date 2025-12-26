@@ -3,9 +3,9 @@
  *
  * This serverless function securely calls the Claude API to generate
  * detailed travel itineraries based on user input.
+ *
+ * Note: Uses Node 18+ built-in fetch API (no dependencies needed)
  */
-
-const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
