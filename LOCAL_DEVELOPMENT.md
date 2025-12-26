@@ -26,7 +26,7 @@ npm install
 
 This installs:
 - `node-fetch` (required by the serverless function)
-- Netlify CLI will be installed via npx when you run it
+- `netlify-cli` (for running functions locally)
 
 ### 2. Set Up Environment Variables
 
