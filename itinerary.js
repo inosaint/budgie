@@ -307,34 +307,8 @@ function saveItineraryAsPDF() {
     window.print();
 }
 
-// Toggle sound on/off
-function toggleSound(button) {
-    if (window.soundManager) {
-        const isMuted = window.soundManager.toggleMute();
-        const icon = button.querySelector('.sound-icon');
-        if (isMuted) {
-            icon.textContent = '🔇';
-            button.childNodes[1].textContent = ' Sound Off';
-        } else {
-            icon.textContent = '🔊';
-            button.childNodes[1].textContent = ' Sound On';
-        }
-    }
-}
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Update sound button state
-    const soundToggle = document.getElementById('soundToggle');
-    if (soundToggle && window.soundManager) {
-        const isMuted = window.soundManager.isMuted();
-        const icon = soundToggle.querySelector('.sound-icon');
-        if (isMuted) {
-            icon.textContent = '🔇';
-            soundToggle.childNodes[1].textContent = ' Sound Off';
-        }
-    }
-
     // Play dot matrix printer sound when loading itinerary
     if (window.soundManager) {
         window.soundManager.playDotMatrixPrinter(2.5);
