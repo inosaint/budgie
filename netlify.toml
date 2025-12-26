@@ -1,0 +1,33 @@
+# Netlify Configuration for Budgie Travel Planner
+
+[build]
+  # Publish directory (static files)
+  publish = "."
+
+  # No build command needed (static site)
+  command = ""
+
+[functions]
+  # Directory for serverless functions
+  directory = "netlify/functions"
+
+  # Node.js version
+  node_bundler = "esbuild"
+
+# Redirect rules for cleaner URLs (optional)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Environment variables (set these in Netlify dashboard)
+# CLAUDE_API_KEY = "your-api-key-here"
