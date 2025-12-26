@@ -16,14 +16,32 @@ budgie-calculator/
 
 ### Local Development
 
-**Option 1: Direct File (No Setup Required)**
+**Option 1: Static Site Only (No AI)**
 Simply open `index.html` in your browser. No build process or server required!
 
-**Option 2: Development Server (Recommended)**
+**Option 2: Static Server (No AI)**
 ```bash
 npm start
 ```
 This will start a local server at `http://localhost:3000` with live reloading.
+
+**Option 3: Full App with AI (Recommended for Development)**
+```bash
+npm run netlify
+```
+This runs the full app with serverless functions at `http://localhost:8888`.
+See [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md) for complete setup instructions.
+
+### Testing Before Deployment
+
+**IMPORTANT:** Test your changes locally before merging PRs!
+
+1. Set up `.env` file with your Claude API key (see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md))
+2. Run `npm run netlify` to test the full app locally
+3. Verify AI itinerary generation works
+4. Create PR only after local testing passes
+
+This saves time and avoids broken deployments.
 
 ### Deployment Options
 
@@ -32,7 +50,7 @@ This will start a local server at `http://localhost:3000` with live reloading.
 For full AI itinerary generation:
 1. Push code to GitHub
 2. Connect to Netlify (free account)
-3. Add environment variable `budgie` with your Claude API key
+3. Add environment variable `budgie` with your Claude API key in Netlify dashboard
 4. Deploy with your custom domain
 
 **Option 2: GitHub Pages (Calculator Only)**
