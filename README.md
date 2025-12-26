@@ -32,10 +32,8 @@ This will start a local server at `http://localhost:3000` with live reloading.
 For full AI itinerary generation:
 1. Push code to GitHub
 2. Connect to Netlify (free account)
-3. Add `CLAUDE_API_KEY` environment variable
+3. Add environment variable `budgie` with your Claude API key
 4. Deploy with your custom domain
-
-📖 **See [CLAUDE_API_SETUP.md](CLAUDE_API_SETUP.md) for detailed instructions**
 
 **Option 2: GitHub Pages (Calculator Only)**
 
