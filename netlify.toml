@@ -17,14 +17,13 @@
 
 # Redirects and rewrites
 [[redirects]]
-  # SPA fallback (optional, for future use)
+  # SPA fallback for client-side routing
   from = "/*"
   to = "/index.html"
   status = 200
   force = false
 
-  # Don't apply SPA fallback to function calls
-  conditions = {Role = ["admin", "editor"]}
+  # Netlify automatically excludes /.netlify/functions/* paths
 
 # Headers for security
 [[headers]]
