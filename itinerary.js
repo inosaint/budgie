@@ -337,15 +337,16 @@ async function regenerateItinerary() {
 
     const tripData = JSON.parse(tripDataStr);
 
-    // Check if we're deployed (can use API)
-    const useAPI = window.location.hostname !== 'file://';
+    // Check if Netlify functions are available
+    const hasNetlifyFunctions = window.location.hostname.includes('netlify.app') ||
+                                 window.location.port === '8888';
 
-    if (useAPI) {
+    if (hasNetlifyFunctions) {
         // Fetch new itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Local development - just re-render dummy data
-        alert('Running locally - using dummy data. Deploy to Netlify to use Claude API.');
+        // Local development without Netlify Dev - use dummy data
+        alert('Netlify functions not available. Run with `netlify dev` or deploy to Netlify.');
         currentItinerary = dummyItinerary;
         renderItinerary();
     }
@@ -369,8 +370,9 @@ async function initializePage() {
     const tripDataStr = localStorage.getItem('budgieTripData');
 
     if (!tripDataStr) {
-        // No trip data found - use dummy data
-        console.log('No trip data found in localStorage, using dummy data');
+        // No trip data found - this shouldn't happen in normal flow
+        console.error('No trip data found in localStorage');
+        alert('No trip data found. Please start from the budget calculator.');
         updateBudgetSummary(null);
         currentItinerary = dummyItinerary;
         renderItinerary();
@@ -408,16 +410,17 @@ async function initializePage() {
         console.error('[SOUND DEBUG] ERROR playing sound:', error);
     }
 
-    // Check if we should use the API or dummy data
-    // If API_ENDPOINT is localhost or the function exists, try to use it
-    const useAPI = window.location.hostname !== 'file://';
+    // Check if Netlify functions are available
+    // True when: deployed to netlify.app OR running Netlify Dev (localhost:8888)
+    const hasNetlifyFunctions = window.location.hostname.includes('netlify.app') ||
+                                 window.location.port === '8888';
 
-    if (useAPI) {
+    if (hasNetlifyFunctions) {
         // Show loading state and fetch itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Local development - use dummy data
-        console.log('Running locally, using dummy data');
+        // Local development without Netlify Dev - use dummy data
+        console.log('Netlify functions not available, using dummy data');
         currentItinerary = dummyItinerary;
         renderItinerary();
     }
