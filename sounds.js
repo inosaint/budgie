@@ -6,6 +6,7 @@ class SoundManager {
         this.audioContext = null;
         this.sounds = {};
         this.muted = localStorage.getItem('budgie-muted') === 'true';
+        this.isPlayingSynthetic = false; // Track if we're using synthetic sound
         this.initAudioContext();
         this.loadSounds();
     }
@@ -148,6 +149,7 @@ class SoundManager {
         // Try to play real audio file first
         if (this.sounds.dotMatrixPrinter && this.sounds.dotMatrixPrinter.readyState >= 2) {
             console.log('[SOUND DEBUG - SoundManager] Playing real audio file, readyState:', this.sounds.dotMatrixPrinter.readyState);
+            this.isPlayingSynthetic = false;
             this.sounds.dotMatrixPrinter.currentTime = 0;
             this.sounds.dotMatrixPrinter.play().then(() => {
                 console.log('[SOUND DEBUG - SoundManager] Real audio playback started successfully');
@@ -155,11 +157,13 @@ class SoundManager {
                 console.error('[SOUND DEBUG - SoundManager] Real audio playback failed:', error);
                 console.log('[SOUND DEBUG - SoundManager] Falling back to synthetic sound');
                 // Fallback to synthetic sound
+                this.isPlayingSynthetic = true;
                 this.playDotMatrixPrinterSynth(duration);
             });
         } else {
             console.log('[SOUND DEBUG - SoundManager] Using synthetic sound. ReadyState:', this.sounds.dotMatrixPrinter?.readyState);
             // Use synthetic sound
+            this.isPlayingSynthetic = true;
             this.playDotMatrixPrinterSynth(duration);
         }
     }
@@ -167,13 +171,17 @@ class SoundManager {
     // Stop dot matrix printer sound
     stopDotMatrixPrinter() {
         console.log('[SOUND DEBUG - SoundManager] stopDotMatrixPrinter called');
-        // Stop real audio file if it's playing
-        if (this.sounds.dotMatrixPrinter) {
+        console.log('[SOUND DEBUG - SoundManager] isPlayingSynthetic:', this.isPlayingSynthetic);
+
+        // Only stop real audio files, not synthetic sounds
+        // Synthetic sounds are short-lived oscillators that stop automatically
+        if (!this.isPlayingSynthetic && this.sounds.dotMatrixPrinter) {
             console.log('[SOUND DEBUG - SoundManager] Stopping real audio file');
             this.sounds.dotMatrixPrinter.pause();
             this.sounds.dotMatrixPrinter.currentTime = 0;
+        } else {
+            console.log('[SOUND DEBUG - SoundManager] Not stopping - using synthetic sound (stops automatically)');
         }
-        // Note: Synthetic sounds are short-lived oscillators that stop automatically
     }
 
     // Toggle mute/unmute
