@@ -338,14 +338,14 @@ async function regenerateItinerary() {
     const tripData = JSON.parse(tripDataStr);
 
     // Check if we're deployed (can use API)
-    const useAPI = window.location.hostname !== 'file://';
+    const useAPI = window.location.protocol !== 'file:';
 
     if (useAPI) {
         // Fetch new itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Local development - just re-render dummy data
-        alert('Running locally - using dummy data. Deploy to Netlify to use Claude API.');
+        // Running from file:// - API not available
+        alert('Running locally from file - API not available. Please deploy to Netlify.');
         currentItinerary = dummyItinerary;
         renderItinerary();
     }
@@ -369,8 +369,9 @@ async function initializePage() {
     const tripDataStr = localStorage.getItem('budgieTripData');
 
     if (!tripDataStr) {
-        // No trip data found - use dummy data
-        console.log('No trip data found in localStorage, using dummy data');
+        // No trip data found - this shouldn't happen in normal flow
+        console.error('No trip data found in localStorage');
+        alert('No trip data found. Please start from the budget calculator.');
         updateBudgetSummary(null);
         currentItinerary = dummyItinerary;
         renderItinerary();
@@ -409,15 +410,15 @@ async function initializePage() {
     }
 
     // Check if we should use the API or dummy data
-    // If API_ENDPOINT is localhost or the function exists, try to use it
-    const useAPI = window.location.hostname !== 'file://';
+    // When deployed, protocol will be http: or https:, not file:
+    const useAPI = window.location.protocol !== 'file:';
 
     if (useAPI) {
         // Show loading state and fetch itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Local development - use dummy data
-        console.log('Running locally, using dummy data');
+        // Running from file:// - API not available
+        console.log('Running from file://, using dummy data');
         currentItinerary = dummyItinerary;
         renderItinerary();
     }
