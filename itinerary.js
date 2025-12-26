@@ -443,6 +443,11 @@ async function fetchItineraryFromAPI(tripData) {
 
 // Show loading state while API is working
 function showLoadingState() {
+    // Play dot matrix printer sound
+    if (window.soundManager) {
+        window.soundManager.playDotMatrixPrinter(2);
+    }
+
     const container = document.getElementById('itinerarySheets');
     container.innerHTML = `
         <div class="loading-container" style="

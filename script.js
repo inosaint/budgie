@@ -783,21 +783,25 @@ function saveReceipt() {
             <div>Thank you for using Budgie!</div>
         </div>
     `;
-    
-    document.getElementById('receiptContent').innerHTML = receiptHTML;
-    document.getElementById('receiptOverlay').classList.add('show');
 
-    // Play thermal printer sound
+    // Play thermal printer sound first
     if (window.soundManager) {
         window.soundManager.playThermalPrinter();
     }
 
-    // Add receipt to background stack
-    addReceiptToBackground(receiptHTML);
-
+    // Delay receipt display until sound is 90% complete
+    // Thermal printer sound is ~150ms (3 beeps × 50ms), so 90% = 135ms
     setTimeout(() => {
-        downloadReceiptAsImage();
-    }, 500);
+        document.getElementById('receiptContent').innerHTML = receiptHTML;
+        document.getElementById('receiptOverlay').classList.add('show');
+
+        // Add receipt to background stack
+        addReceiptToBackground(receiptHTML);
+
+        setTimeout(() => {
+            downloadReceiptAsImage();
+        }, 500);
+    }, 135);
 }
 
 function closeReceipt() {
