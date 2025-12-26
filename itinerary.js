@@ -141,9 +141,16 @@ const dummyItinerary = {
 
 // Render the itinerary sheets
 function renderItinerary() {
+    console.log('[SOUND DEBUG] renderItinerary called, stopping sound...');
     // Stop dot matrix printer sound when itinerary is ready to display
-    if (window.soundManager) {
-        window.soundManager.stopDotMatrixPrinter();
+    try {
+        if (window.soundManager) {
+            window.soundManager.stopDotMatrixPrinter();
+        } else {
+            console.error('[SOUND DEBUG] ERROR: window.soundManager is not defined in renderItinerary!');
+        }
+    } catch (error) {
+        console.error('[SOUND DEBUG] ERROR stopping sound in renderItinerary:', error);
     }
 
     const container = document.getElementById('itinerarySheets');
@@ -307,8 +314,17 @@ function editDay(day) {
 // Regenerate full itinerary
 async function regenerateItinerary() {
     // Play dot matrix printer sound
-    if (window.soundManager) {
-        window.soundManager.playDotMatrixPrinter(2.5);
+    console.log('[SOUND DEBUG] Attempting to play regenerate itinerary sound...');
+    try {
+        if (!window.soundManager) {
+            console.error('[SOUND DEBUG] ERROR: window.soundManager is not defined!');
+        } else {
+            console.log('[SOUND DEBUG] soundManager found, calling playDotMatrixPrinter(2.5)...');
+            window.soundManager.playDotMatrixPrinter(2.5);
+            console.log('[SOUND DEBUG] playDotMatrixPrinter() called successfully');
+        }
+    } catch (error) {
+        console.error('[SOUND DEBUG] ERROR playing sound:', error);
     }
 
     // Get trip data from localStorage
@@ -367,8 +383,29 @@ async function initializePage() {
     updateBudgetSummary(tripData);
 
     // Play dot matrix printer sound for initial generation
-    if (window.soundManager) {
-        window.soundManager.playDotMatrixPrinter(2);
+    console.log('[SOUND DEBUG] Attempting to play initial itinerary sound...');
+    try {
+        if (!window.soundManager) {
+            console.error('[SOUND DEBUG] ERROR: window.soundManager is not defined!');
+        } else {
+            console.log('[SOUND DEBUG] soundManager found:', window.soundManager);
+            console.log('[SOUND DEBUG] soundManager.muted:', window.soundManager.isMuted());
+            console.log('[SOUND DEBUG] soundManager.sounds:', window.soundManager.sounds);
+
+            if (window.soundManager.sounds && window.soundManager.sounds.dotMatrixPrinter) {
+                console.log('[SOUND DEBUG] dotMatrixPrinter audio element:', {
+                    src: window.soundManager.sounds.dotMatrixPrinter.src,
+                    readyState: window.soundManager.sounds.dotMatrixPrinter.readyState,
+                    error: window.soundManager.sounds.dotMatrixPrinter.error
+                });
+            }
+
+            console.log('[SOUND DEBUG] Calling playDotMatrixPrinter(2)...');
+            window.soundManager.playDotMatrixPrinter(2);
+            console.log('[SOUND DEBUG] playDotMatrixPrinter() called successfully');
+        }
+    } catch (error) {
+        console.error('[SOUND DEBUG] ERROR playing sound:', error);
     }
 
     // Check if we should use the API or dummy data

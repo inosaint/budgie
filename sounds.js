@@ -136,16 +136,29 @@ class SoundManager {
 
     // Play dot matrix printer sound (for itinerary generation)
     playDotMatrixPrinter(duration = 2) {
-        if (this.muted) return;
+        console.log('[SOUND DEBUG - SoundManager] playDotMatrixPrinter called with duration:', duration);
+
+        if (this.muted) {
+            console.log('[SOUND DEBUG - SoundManager] Sound is muted, returning early');
+            return;
+        }
+
+        console.log('[SOUND DEBUG - SoundManager] dotMatrixPrinter exists:', !!this.sounds.dotMatrixPrinter);
 
         // Try to play real audio file first
         if (this.sounds.dotMatrixPrinter && this.sounds.dotMatrixPrinter.readyState >= 2) {
+            console.log('[SOUND DEBUG - SoundManager] Playing real audio file, readyState:', this.sounds.dotMatrixPrinter.readyState);
             this.sounds.dotMatrixPrinter.currentTime = 0;
-            this.sounds.dotMatrixPrinter.play().catch(() => {
+            this.sounds.dotMatrixPrinter.play().then(() => {
+                console.log('[SOUND DEBUG - SoundManager] Real audio playback started successfully');
+            }).catch((error) => {
+                console.error('[SOUND DEBUG - SoundManager] Real audio playback failed:', error);
+                console.log('[SOUND DEBUG - SoundManager] Falling back to synthetic sound');
                 // Fallback to synthetic sound
                 this.playDotMatrixPrinterSynth(duration);
             });
         } else {
+            console.log('[SOUND DEBUG - SoundManager] Using synthetic sound. ReadyState:', this.sounds.dotMatrixPrinter?.readyState);
             // Use synthetic sound
             this.playDotMatrixPrinterSynth(duration);
         }
@@ -153,8 +166,10 @@ class SoundManager {
 
     // Stop dot matrix printer sound
     stopDotMatrixPrinter() {
+        console.log('[SOUND DEBUG - SoundManager] stopDotMatrixPrinter called');
         // Stop real audio file if it's playing
         if (this.sounds.dotMatrixPrinter) {
+            console.log('[SOUND DEBUG - SoundManager] Stopping real audio file');
             this.sounds.dotMatrixPrinter.pause();
             this.sounds.dotMatrixPrinter.currentTime = 0;
         }
