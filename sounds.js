@@ -6,6 +6,9 @@ class SoundManager {
         this.audioContext = null;
         this.sounds = {};
         this.muted = localStorage.getItem('budgie-muted') === 'true';
+        this.isPlayingSynthetic = false; // Track if we're using synthetic sound
+        this.pendingDotMatrixPlay = false; // Track if we're waiting for audio to load
+        this.pendingDuration = 2; // Store the duration for pending play
         this.initAudioContext();
         this.loadSounds();
     }
@@ -25,6 +28,26 @@ class SoundManager {
             thermalPrinter: this.createAudioElement('sounds/thermal-printer.mp3'),
             dotMatrixPrinter: this.createAudioElement('sounds/dot-matrix-printer.mp3')
         };
+
+        // Add event listener for when dot matrix audio is ready
+        if (this.sounds.dotMatrixPrinter) {
+            this.sounds.dotMatrixPrinter.addEventListener('canplaythrough', () => {
+                console.log('[SOUND DEBUG - SoundManager] Dot matrix audio ready, readyState:', this.sounds.dotMatrixPrinter.readyState);
+
+                // If we were waiting to play, play now
+                if (this.pendingDotMatrixPlay && !this.muted) {
+                    console.log('[SOUND DEBUG - SoundManager] Playing pending dot matrix sound');
+                    this.pendingDotMatrixPlay = false;
+                    this.isPlayingSynthetic = false;
+                    this.sounds.dotMatrixPrinter.currentTime = 0;
+                    this.sounds.dotMatrixPrinter.play().then(() => {
+                        console.log('[SOUND DEBUG - SoundManager] Pending playback started successfully');
+                    }).catch((error) => {
+                        console.error('[SOUND DEBUG - SoundManager] Pending playback failed:', error);
+                    });
+                }
+            }, { once: false }); // Keep listener for multiple loads
+        }
     }
 
     createAudioElement(src) {
@@ -136,18 +159,64 @@ class SoundManager {
 
     // Play dot matrix printer sound (for itinerary generation)
     playDotMatrixPrinter(duration = 2) {
-        if (this.muted) return;
+        console.log('[SOUND DEBUG - SoundManager] playDotMatrixPrinter called with duration:', duration);
+
+        if (this.muted) {
+            console.log('[SOUND DEBUG - SoundManager] Sound is muted, returning early');
+            return;
+        }
+
+        console.log('[SOUND DEBUG - SoundManager] dotMatrixPrinter exists:', !!this.sounds.dotMatrixPrinter);
 
         // Try to play real audio file first
         if (this.sounds.dotMatrixPrinter && this.sounds.dotMatrixPrinter.readyState >= 2) {
+            console.log('[SOUND DEBUG - SoundManager] Playing real audio file, readyState:', this.sounds.dotMatrixPrinter.readyState);
+            this.pendingDotMatrixPlay = false;
+            this.isPlayingSynthetic = false;
             this.sounds.dotMatrixPrinter.currentTime = 0;
-            this.sounds.dotMatrixPrinter.play().catch(() => {
+            this.sounds.dotMatrixPrinter.play().then(() => {
+                console.log('[SOUND DEBUG - SoundManager] Real audio playback started successfully');
+            }).catch((error) => {
+                console.error('[SOUND DEBUG - SoundManager] Real audio playback failed:', error);
+                console.log('[SOUND DEBUG - SoundManager] Falling back to synthetic sound');
                 // Fallback to synthetic sound
+                this.isPlayingSynthetic = true;
                 this.playDotMatrixPrinterSynth(duration);
             });
+        } else if (this.sounds.dotMatrixPrinter && this.sounds.dotMatrixPrinter.readyState < 2) {
+            // Audio is loading but not ready yet - wait for it to be ready
+            console.log('[SOUND DEBUG - SoundManager] Audio loading (readyState:', this.sounds.dotMatrixPrinter.readyState, '), will play when ready');
+            this.pendingDotMatrixPlay = true;
+            this.pendingDuration = duration;
+            this.isPlayingSynthetic = false;
         } else {
+            console.log('[SOUND DEBUG - SoundManager] Using synthetic sound. ReadyState:', this.sounds.dotMatrixPrinter?.readyState);
             // Use synthetic sound
+            this.isPlayingSynthetic = true;
             this.playDotMatrixPrinterSynth(duration);
+        }
+    }
+
+    // Stop dot matrix printer sound
+    stopDotMatrixPrinter() {
+        console.log('[SOUND DEBUG - SoundManager] stopDotMatrixPrinter called');
+        console.log('[SOUND DEBUG - SoundManager] isPlayingSynthetic:', this.isPlayingSynthetic);
+        console.log('[SOUND DEBUG - SoundManager] pendingDotMatrixPlay:', this.pendingDotMatrixPlay);
+
+        // Cancel any pending play
+        if (this.pendingDotMatrixPlay) {
+            console.log('[SOUND DEBUG - SoundManager] Canceling pending playback');
+            this.pendingDotMatrixPlay = false;
+        }
+
+        // Only stop real audio files, not synthetic sounds
+        // Synthetic sounds are short-lived oscillators that stop automatically
+        if (!this.isPlayingSynthetic && this.sounds.dotMatrixPrinter) {
+            console.log('[SOUND DEBUG - SoundManager] Stopping real audio file');
+            this.sounds.dotMatrixPrinter.pause();
+            this.sounds.dotMatrixPrinter.currentTime = 0;
+        } else {
+            console.log('[SOUND DEBUG - SoundManager] Not stopping - using synthetic sound (stops automatically)');
         }
     }
 

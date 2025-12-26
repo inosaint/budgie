@@ -783,21 +783,25 @@ function saveReceipt() {
             <div>Thank you for using Budgie!</div>
         </div>
     `;
-    
-    document.getElementById('receiptContent').innerHTML = receiptHTML;
-    document.getElementById('receiptOverlay').classList.add('show');
 
-    // Play thermal printer sound
+    // Play thermal printer sound first
     if (window.soundManager) {
         window.soundManager.playThermalPrinter();
     }
 
-    // Add receipt to background stack
-    addReceiptToBackground(receiptHTML);
-
+    // Delay receipt display until sound is 90% complete
+    // Thermal printer sound is ~150ms (3 beeps × 50ms), so 90% = 135ms
     setTimeout(() => {
-        downloadReceiptAsImage();
-    }, 500);
+        document.getElementById('receiptContent').innerHTML = receiptHTML;
+        document.getElementById('receiptOverlay').classList.add('show');
+
+        // Add receipt to background stack
+        addReceiptToBackground(receiptHTML);
+
+        setTimeout(() => {
+            downloadReceiptAsImage();
+        }, 500);
+    }, 135);
 }
 
 function closeReceipt() {
@@ -1398,6 +1402,7 @@ function generateItinerary() {
     const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, accommodation } = lastCalculation;
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
+    const rate = exchangeRates[currency];
     const enableTravelDates = document.getElementById('enableTravelDates').checked;
     const startDate = enableTravelDates ? document.getElementById('startDate').value : '';
     const endDate = enableTravelDates ? document.getElementById('endDate').value : '';
@@ -1415,15 +1420,14 @@ function generateItinerary() {
         const end = new Date(endDate);
         const options = { month: 'short', day: 'numeric', year: 'numeric' };
         dateDisplay = `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
-    } else {
-        // Generate default dates (e.g., 2 months from now)
-        const start = new Date();
-        start.setMonth(start.getMonth() + 2);
-        const end = new Date(start);
-        end.setDate(end.getDate() + duration - 1);
-        const options = { month: 'short', day: 'numeric', year: 'numeric' };
-        dateDisplay = `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
     }
+
+    // Apply currency conversion to all costs
+    const convertedFlightCost = flightCost * rate;
+    const convertedAccommodationCost = accommodationCost * rate;
+    const convertedMealCost = mealCost * rate;
+    const convertedActivityCost = activityCost * rate;
+    const convertedTotalCost = totalCost * rate;
 
     // Prepare trip data for API
     const tripData = {
@@ -1433,14 +1437,14 @@ function generateItinerary() {
         budget: accommodation, // budget tier (budget/moderate/comfort/luxury)
         travelers: people,
         dates: dateDisplay,
-        flights: `${symbol}${Math.round(flightCost).toLocaleString()}`,
-        accommodation: `${symbol}${Math.round(accommodationCost).toLocaleString()}`,
-        meals: `${symbol}${Math.round(mealCost).toLocaleString()}`,
-        activities: `${symbol}${Math.round(activityCost).toLocaleString()}`,
-        total: `${symbol}${Math.round(totalCost).toLocaleString()}`,
-        perPerson: `${symbol}${Math.round(totalCost / people).toLocaleString()}`,
+        flights: `${symbol}${Math.round(convertedFlightCost).toLocaleString()}`,
+        accommodation: `${symbol}${Math.round(convertedAccommodationCost).toLocaleString()}`,
+        meals: `${symbol}${Math.round(convertedMealCost).toLocaleString()}`,
+        activities: `${symbol}${Math.round(convertedActivityCost).toLocaleString()}`,
+        total: `${symbol}${Math.round(convertedTotalCost).toLocaleString()}`,
+        perPerson: `${symbol}${Math.round(convertedTotalCost / people).toLocaleString()}`,
         nights: Math.max(duration - 1, 1),
-        perDay: `${symbol}${Math.round(totalCost / duration).toLocaleString()}`,
+        perDay: `${symbol}${Math.round(convertedTotalCost / duration).toLocaleString()}`,
         route: `${source} → ${destination}`
     };
 
