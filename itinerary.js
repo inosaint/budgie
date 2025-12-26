@@ -337,15 +337,18 @@ async function regenerateItinerary() {
 
     const tripData = JSON.parse(tripDataStr);
 
-    // Check if we're deployed (can use API)
-    const useAPI = window.location.protocol !== 'file:';
+    // Check if we're on Netlify deployment
+    const isNetlifyDeployment = window.location.hostname.includes('netlify.app') ||
+                                 (window.location.protocol !== 'file:' &&
+                                  window.location.hostname !== 'localhost' &&
+                                  window.location.hostname !== '127.0.0.1');
 
-    if (useAPI) {
+    if (isNetlifyDeployment) {
         // Fetch new itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Running from file:// - API not available
-        alert('Running locally from file - API not available. Please deploy to Netlify.');
+        // Local development - use dummy data
+        alert('Running locally - API not available. Please deploy to Netlify.');
         currentItinerary = dummyItinerary;
         renderItinerary();
     }
@@ -409,16 +412,19 @@ async function initializePage() {
         console.error('[SOUND DEBUG] ERROR playing sound:', error);
     }
 
-    // Check if we should use the API or dummy data
-    // When deployed, protocol will be http: or https:, not file:
-    const useAPI = window.location.protocol !== 'file:';
+    // Check if we're on Netlify deployment (not localhost or file://)
+    // Only use API when deployed to Netlify
+    const isNetlifyDeployment = window.location.hostname.includes('netlify.app') ||
+                                 (window.location.protocol !== 'file:' &&
+                                  window.location.hostname !== 'localhost' &&
+                                  window.location.hostname !== '127.0.0.1');
 
-    if (useAPI) {
+    if (isNetlifyDeployment) {
         // Show loading state and fetch itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Running from file:// - API not available
-        console.log('Running from file://, using dummy data');
+        // Local development or file:// - use dummy data
+        console.log('Not on Netlify deployment, using dummy data');
         currentItinerary = dummyItinerary;
         renderItinerary();
     }
