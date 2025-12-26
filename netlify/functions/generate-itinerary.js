@@ -42,11 +42,12 @@ exports.handler = async (event, context) => {
     }
 
     // Get Claude API key and model from environment variables
-    const CLAUDE_API_KEY = process.env.budgie;
+    // Support both ANTHROPIC_API_KEY (standard) and budgie (legacy) for backwards compatibility
+    const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.budgie;
     const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20240620';
 
     if (!CLAUDE_API_KEY) {
-      console.error('budgie environment variable not set');
+      console.error('ANTHROPIC_API_KEY environment variable not set');
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Server configuration error' })
@@ -167,7 +168,9 @@ Remember: Return ONLY the JSON object, no other text.`;
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*', // Adjust this in production to your domain
+        // CORS: Allow requests from the same domain (Netlify will handle this automatically)
+        // For production, restrict to specific domains via environment variable
+        'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
       },
