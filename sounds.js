@@ -151,6 +151,16 @@ class SoundManager {
         }
     }
 
+    // Stop dot matrix printer sound
+    stopDotMatrixPrinter() {
+        // Stop real audio file if it's playing
+        if (this.sounds.dotMatrixPrinter) {
+            this.sounds.dotMatrixPrinter.pause();
+            this.sounds.dotMatrixPrinter.currentTime = 0;
+        }
+        // Note: Synthetic sounds are short-lived oscillators that stop automatically
+    }
+
     // Toggle mute/unmute
     toggleMute() {
         this.muted = !this.muted;

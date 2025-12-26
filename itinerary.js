@@ -141,6 +141,11 @@ const dummyItinerary = {
 
 // Render the itinerary sheets
 function renderItinerary() {
+    // Stop dot matrix printer sound when itinerary is ready to display
+    if (window.soundManager) {
+        window.soundManager.stopDotMatrixPrinter();
+    }
+
     const container = document.getElementById('itinerarySheets');
     const route = document.getElementById('summaryRoute').textContent;
 
@@ -525,10 +530,5 @@ function showErrorState(error) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Play dot matrix printer sound when loading itinerary
-    if (window.soundManager) {
-        window.soundManager.playDotMatrixPrinter(2.5);
-    }
-
     initializePage();
 });
