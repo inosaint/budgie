@@ -3,9 +3,9 @@
  *
  * This serverless function securely calls the Claude API to generate
  * detailed travel itineraries based on user input.
+ *
+ * Note: Uses Node 18+ built-in fetch API (no dependencies needed)
  */
-
-const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
@@ -41,8 +41,10 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Get Claude API key from environment variable
+    // Get Claude API key and model from environment variables
     const CLAUDE_API_KEY = process.env.budgie;
+    const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20240620';
+
     if (!CLAUDE_API_KEY) {
       console.error('budgie environment variable not set');
       return {
@@ -107,7 +109,7 @@ Remember: Return ONLY the JSON object, no other text.`;
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: CLAUDE_MODEL,
         max_tokens: 4096,
         temperature: 0.7,
         messages: [{
