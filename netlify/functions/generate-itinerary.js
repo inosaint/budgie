@@ -92,7 +92,7 @@ exports.handler = async (event, context) => {
     // Get Claude API key and model from environment variables
     // Support both ANTHROPIC_API_KEY (standard) and budgie (legacy) for backwards compatibility
     const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.budgie;
-    const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022';
+    const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-haiku-4-5';
 
     if (!CLAUDE_API_KEY) {
       console.error('ANTHROPIC_API_KEY environment variable not set');
