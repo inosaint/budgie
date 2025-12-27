@@ -67,7 +67,7 @@ function renderItinerary() {
         modPanel.className = 'modification-panel';
         modPanel.innerHTML = `
             <button onclick="regenerateDay(${dayData.day})">🔄 Regenerate Day ${dayData.day}</button>
-            <button onclick="editDay(${dayData.day})">✏️ Edit Day</button>
+            <button onclick="openDayInGoogleMaps(${dayData.day})">🗺️ View Route on Maps</button>
             <button onclick="closeSheet()">✕ Close</button>
         `;
         sheet.appendChild(modPanel);
@@ -163,21 +163,157 @@ function closeSheet() {
     }
 }
 
-// Placeholder functions for modification actions
-function regenerateDay(day) {
+// Regenerate a single day
+async function regenerateDay(day) {
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('day_regenerated', {
+            day: day
+        });
+    }
+
     // Play dot matrix printer sound
     if (window.soundManager) {
         window.soundManager.playDotMatrixPrinter(1.5);
     }
-    alert(`Regenerating Day ${day}... (Feature coming soon)`);
+
+    // Get trip data from localStorage
+    const tripDataStr = localStorage.getItem('budgieTripData');
+    if (!tripDataStr) {
+        alert('No trip data found. Please return to the calculator.');
+        return;
+    }
+
+    const tripData = JSON.parse(tripDataStr);
+
+    // Check if Netlify functions are available
+    const hasNetlifyFunctions = window.location.hostname.includes('netlify.app') ||
+                                 window.location.port === '8888' ||
+                                 (window.location.protocol !== 'file:' &&
+                                  window.location.hostname !== 'localhost' &&
+                                  window.location.hostname !== '127.0.0.1');
+
+    if (!hasNetlifyFunctions) {
+        alert('Netlify functions not available. Run with `netlify dev` or access the deployed site.');
+        return;
+    }
+
+    try {
+        // Show loading state for this day only
+        const daySheet = document.querySelector(`.day-sheet[data-day="${day}"]`);
+        const originalContent = daySheet.innerHTML;
+        daySheet.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: #666;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🖨️</div>
+                <div>Regenerating Day ${day}...</div>
+            </div>
+        `;
+
+        // Call API to regenerate single day
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ...tripData,
+                regenerateDay: day  // Signal to API that we only want one day regenerated
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.itinerary) {
+            // Update the specific day in currentItinerary
+            const dayIndex = currentItinerary.days.findIndex(d => d.day === day);
+            if (dayIndex !== -1 && data.itinerary.days[0]) {
+                currentItinerary.days[dayIndex] = data.itinerary.days[0];
+            }
+
+            // Re-render the entire itinerary to update this day
+            renderItinerary();
+
+            // Stop the sound when done
+            if (window.soundManager) {
+                window.soundManager.stopDotMatrixPrinter();
+            }
+        } else {
+            throw new Error('Invalid response from API');
+        }
+
+    } catch (error) {
+        console.error('Error regenerating day:', error);
+        alert(`Failed to regenerate Day ${day}. Please try again.`);
+        // Restore original content on error
+        renderItinerary();
+
+        if (window.soundManager) {
+            window.soundManager.stopDotMatrixPrinter();
+        }
+    }
 }
 
-function editDay(day) {
-    alert(`Editing Day ${day}... (Feature coming soon)`);
+// Open day route in Google Maps
+function openDayInGoogleMaps(day) {
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('maps_opened', {
+            day: day
+        });
+    }
+
+    if (!currentItinerary) {
+        alert('No itinerary data available');
+        return;
+    }
+
+    const dayData = currentItinerary.days.find(d => d.day === day);
+    if (!dayData) {
+        alert(`Day ${day} not found`);
+        return;
+    }
+
+    // Extract locations from activity descriptions
+    // We'll look for location names in the descriptions
+    const locations = dayData.activities
+        .map(activity => {
+            // Try to extract location from description
+            // This is a simple heuristic - you might want to improve it
+            const desc = activity.description;
+            // Look for patterns like "Visit X", "Explore X", "at X", etc.
+            const match = desc.match(/(?:Visit|Explore|at|to)\s+([^,\.(]+)/i);
+            return match ? match[1].trim() : null;
+        })
+        .filter(loc => loc !== null);
+
+    if (locations.length === 0) {
+        alert('No locations found in this day\'s itinerary');
+        return;
+    }
+
+    // Get the route from summary
+    const route = document.getElementById('summaryRoute').textContent;
+    const destination = route.split('→')[1]?.trim() || locations[0];
+
+    // Create Google Maps URL with directions
+    // Format: https://www.google.com/maps/dir/location1/location2/location3
+    const mapsUrl = `https://www.google.com/maps/dir/${locations.map(loc => encodeURIComponent(loc)).join('/')}`;
+
+    // Open in new tab
+    window.open(mapsUrl, '_blank');
 }
 
 // Regenerate full itinerary
 async function regenerateItinerary() {
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('full_itinerary_regenerated');
+    }
+
     // Play dot matrix printer sound
     console.log('[SOUND DEBUG] Attempting to play regenerate itinerary sound...');
     try {
@@ -221,7 +357,21 @@ async function regenerateItinerary() {
 
 // Save itinerary as PDF
 function saveItineraryAsPDF() {
-    window.print();
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('pdf_saved');
+    }
+
+    // Safari fix: Close any active sheets and overlays before printing
+    // Safari applies print styles to the visible DOM, causing blank page flash
+    // if overlays or transformed elements are active
+    closeSheet();
+
+    // Safari fix: Small delay to let DOM settle after closing overlays
+    // This prevents Safari from applying print styles while DOM is transitioning
+    setTimeout(() => {
+        window.print();
+    }, 50);
 }
 
 // API endpoint configuration
@@ -289,6 +439,12 @@ async function initializePage() {
     } else {
         // Local development without Netlify Dev - show error
         console.log('Netlify functions not available');
+
+        // Stop printer sound on error
+        if (window.soundManager) {
+            window.soundManager.stopDotMatrixPrinter();
+        }
+
         showErrorState(new Error('Netlify functions not available. Please run with `netlify dev` or access the deployed site at budgie.travel to generate itineraries.'));
     }
 }
@@ -303,7 +459,16 @@ function updateBudgetSummary(tripData) {
     // Update all summary fields
     document.getElementById('summaryRoute').textContent = tripData.route;
     document.getElementById('summaryDuration').textContent = `${tripData.duration} days`;
-    document.getElementById('summaryDates').textContent = tripData.dates;
+
+    // Hide date range row if dates are not provided
+    const dateRangeRow = document.getElementById('summaryDateRangeRow');
+    if (tripData.dates && tripData.dates.trim() !== '') {
+        document.getElementById('summaryDates').textContent = tripData.dates;
+        dateRangeRow.style.display = '';
+    } else {
+        dateRangeRow.style.display = 'none';
+    }
+
     document.getElementById('summaryTravelers').textContent = tripData.travelers;
     document.getElementById('summaryFlights').textContent = tripData.flights;
     document.getElementById('summaryNights').textContent = tripData.nights;
@@ -321,6 +486,8 @@ function updateBudgetSummary(tripData) {
 
 // Fetch itinerary from Claude API via Netlify Function
 async function fetchItineraryFromAPI(tripData) {
+    const startTime = performance.now(); // Track API timing
+
     try {
         showLoadingState();
 
@@ -334,21 +501,70 @@ async function fetchItineraryFromAPI(tripData) {
         });
 
         if (!response.ok) {
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+            const errorMessage = `API request failed: ${response.status} ${response.statusText}`;
+
+            // Track API failure in PostHog
+            if (window.posthog) {
+                posthog.capture('api_error', {
+                    error_type: 'http_error',
+                    status_code: response.status,
+                    error_message: errorMessage,
+                    source: tripData.source,
+                    destination: tripData.destination
+                });
+            }
+
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
 
         if (data.success && data.itinerary) {
+            const endTime = performance.now();
+            const duration = Math.round(endTime - startTime);
+
+            // Track successful API call with timing in PostHog
+            if (window.posthog) {
+                posthog.capture('itinerary_generated', {
+                    duration_ms: duration,
+                    source: tripData.source,
+                    destination: tripData.destination,
+                    days: tripData.duration,
+                    travelers: tripData.travelers
+                });
+            }
+
             currentItinerary = data.itinerary;
             hideLoadingState();
             renderItinerary();
         } else {
+            // Track invalid response
+            if (window.posthog) {
+                posthog.capture('api_error', {
+                    error_type: 'invalid_response',
+                    error_message: 'Invalid response from API'
+                });
+            }
+
             throw new Error('Invalid response from API');
         }
 
     } catch (error) {
         console.error('Error fetching itinerary:', error);
+
+        // Stop printer sound on error (bug fix)
+        if (window.soundManager) {
+            window.soundManager.stopDotMatrixPrinter();
+        }
+
+        // Track generic error if not already tracked
+        if (window.posthog && !error.message.includes('API request failed')) {
+            posthog.capture('api_error', {
+                error_type: 'fetch_error',
+                error_message: error.message
+            });
+        }
+
         hideLoadingState();
         showErrorState(error);
         // No fallback - user needs to fix the issue or try again
