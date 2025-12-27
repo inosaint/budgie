@@ -338,8 +338,12 @@ async function regenerateItinerary() {
     const tripData = JSON.parse(tripDataStr);
 
     // Check if Netlify functions are available
+    // True when: deployed to netlify.app OR custom domain OR running Netlify Dev (localhost:8888)
     const hasNetlifyFunctions = window.location.hostname.includes('netlify.app') ||
-                                 window.location.port === '8888';
+                                 window.location.port === '8888' ||
+                                 (window.location.protocol !== 'file:' &&
+                                  window.location.hostname !== 'localhost' &&
+                                  window.location.hostname !== '127.0.0.1');
 
     if (hasNetlifyFunctions) {
         // Fetch new itinerary from API
@@ -411,9 +415,12 @@ async function initializePage() {
     }
 
     // Check if Netlify functions are available
-    // True when: deployed to netlify.app OR running Netlify Dev (localhost:8888)
+    // True when: deployed to netlify.app OR custom domain OR running Netlify Dev (localhost:8888)
     const hasNetlifyFunctions = window.location.hostname.includes('netlify.app') ||
-                                 window.location.port === '8888';
+                                 window.location.port === '8888' ||
+                                 (window.location.protocol !== 'file:' &&
+                                  window.location.hostname !== 'localhost' &&
+                                  window.location.hostname !== '127.0.0.1');
 
     if (hasNetlifyFunctions) {
         // Show loading state and fetch itinerary from API
