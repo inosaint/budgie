@@ -123,9 +123,21 @@ Remember: Return ONLY the JSON object, no other text.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Claude API error:', errorText);
+
+      // Check if it's a model deprecation/not found error
+      let errorMessage = 'Failed to generate itinerary';
+      if (errorText.includes('not_found_error') && errorText.includes('model:')) {
+        errorMessage = `The Claude model '${CLAUDE_MODEL}' is no longer available. Please update CLAUDE_MODEL environment variable to a current model version (e.g., claude-3-5-sonnet-20241022).`;
+        console.error('MODEL DEPRECATION DETECTED:', errorMessage);
+      }
+
       return {
         statusCode: response.status,
-        body: JSON.stringify({ error: 'Failed to generate itinerary', details: errorText })
+        body: JSON.stringify({
+          error: errorMessage,
+          details: errorText,
+          currentModel: CLAUDE_MODEL
+        })
       };
     }
 
