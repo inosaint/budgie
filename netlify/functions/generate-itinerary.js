@@ -3,9 +3,57 @@
  *
  * This serverless function securely calls the Claude API to generate
  * detailed travel itineraries based on user input.
- *
- * Note: Uses Node 18+ built-in fetch API (no dependencies needed)
  */
+
+const Anthropic = require('@anthropic-ai/sdk');
+
+/**
+ * Fetch available models and select the best Claude Sonnet model
+ * @param {string} apiKey - Anthropic API key
+ * @returns {Promise<string>} - The ID of the best available model
+ */
+async function getFallbackModel(apiKey) {
+  try {
+    const client = new Anthropic({ apiKey });
+    const models = [];
+
+    // Fetch all available models
+    for await (const modelInfo of client.models.list()) {
+      models.push(modelInfo.id);
+    }
+
+    // Prefer Sonnet models, sort by date (newest first)
+    const sonnetModels = models
+      .filter(id => id.includes('sonnet'))
+      .sort((a, b) => b.localeCompare(a)); // Lexicographic sort puts newer dates first
+
+    if (sonnetModels.length > 0) {
+      console.log('Available Sonnet models:', sonnetModels);
+      return sonnetModels[0]; // Return the latest Sonnet model
+    }
+
+    // Fallback to any Claude 3.5 model
+    const claude35Models = models
+      .filter(id => id.includes('claude-3-5') || id.includes('claude-3.5'))
+      .sort((a, b) => b.localeCompare(a));
+
+    if (claude35Models.length > 0) {
+      console.log('Available Claude 3.5 models:', claude35Models);
+      return claude35Models[0];
+    }
+
+    // Last resort: return the first available model
+    if (models.length > 0) {
+      console.log('Using first available model:', models[0]);
+      return models[0];
+    }
+
+    throw new Error('No models available');
+  } catch (error) {
+    console.error('Error fetching fallback model:', error);
+    throw error;
+  }
+}
 
 exports.handler = async (event, context) => {
   // Handle CORS preflight requests
@@ -101,44 +149,86 @@ All other days should include a mix of activities, sightseeing, meals, and accom
 
 Remember: Return ONLY the JSON object, no other text.`;
 
-    // Call Claude API
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 4096,
-        temperature: 0.7,
-        messages: [{
-          role: 'user',
-          content: prompt
-        }]
-      })
-    });
+    // Helper function to call Claude API with a specific model
+    const callClaudeAPI = async (modelToUse) => {
+      return await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: modelToUse,
+          max_tokens: 4096,
+          temperature: 0.7,
+          messages: [{
+            role: 'user',
+            content: prompt
+          }]
+        })
+      });
+    };
 
+    // Call Claude API with the configured model
+    let response = await callClaudeAPI(CLAUDE_MODEL);
+    let modelUsed = CLAUDE_MODEL;
+    let usedFallback = false;
+
+    // Handle model not found error with automatic fallback
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Claude API error:', errorText);
 
       // Check if it's a model deprecation/not found error
-      let errorMessage = 'Failed to generate itinerary';
       if (errorText.includes('not_found_error') && errorText.includes('model:')) {
-        errorMessage = `The Claude model '${CLAUDE_MODEL}' is no longer available. Please update CLAUDE_MODEL environment variable to a current model version (e.g., claude-3-5-sonnet-20241022).`;
-        console.error('MODEL DEPRECATION DETECTED:', errorMessage);
-      }
+        console.warn(`MODEL DEPRECATION DETECTED: Model '${CLAUDE_MODEL}' is no longer available`);
+        console.log('Attempting to fetch and use a fallback model...');
 
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({
-          error: errorMessage,
-          details: errorText,
-          currentModel: CLAUDE_MODEL
-        })
-      };
+        try {
+          // Fetch the best available model and retry
+          const fallbackModel = await getFallbackModel(CLAUDE_API_KEY);
+          console.log(`Retrying with fallback model: ${fallbackModel}`);
+
+          response = await callClaudeAPI(fallbackModel);
+          modelUsed = fallbackModel;
+          usedFallback = true;
+
+          // If the fallback also fails, return the error
+          if (!response.ok) {
+            const fallbackErrorText = await response.text();
+            console.error('Fallback model also failed:', fallbackErrorText);
+            return {
+              statusCode: response.status,
+              body: JSON.stringify({
+                error: 'Failed to generate itinerary with fallback model',
+                details: fallbackErrorText,
+                attemptedModels: [CLAUDE_MODEL, fallbackModel]
+              })
+            };
+          }
+        } catch (fallbackError) {
+          console.error('Error fetching fallback model:', fallbackError);
+          return {
+            statusCode: 500,
+            body: JSON.stringify({
+              error: `The Claude model '${CLAUDE_MODEL}' is no longer available and automatic fallback failed. Please update CLAUDE_MODEL environment variable to a current model version (e.g., claude-3-5-sonnet-20241022).`,
+              details: errorText,
+              fallbackError: fallbackError.message
+            })
+          };
+        }
+      } else {
+        // Non-model-related error
+        return {
+          statusCode: response.status,
+          body: JSON.stringify({
+            error: 'Failed to generate itinerary',
+            details: errorText,
+            currentModel: CLAUDE_MODEL
+          })
+        };
+      }
     }
 
     const data = await response.json();
@@ -175,6 +265,11 @@ Remember: Return ONLY the JSON object, no other text.`;
       };
     }
 
+    // Log if fallback was used
+    if (usedFallback) {
+      console.log(`SUCCESS: Itinerary generated using fallback model '${modelUsed}' (original model '${CLAUDE_MODEL}' was unavailable)`);
+    }
+
     // Return the successful response
     return {
       statusCode: 200,
@@ -195,7 +290,13 @@ Remember: Return ONLY the JSON object, no other text.`;
           duration,
           budget,
           travelers,
-          dates
+          dates,
+          modelUsed,
+          ...(usedFallback && {
+            fallbackUsed: true,
+            originalModel: CLAUDE_MODEL,
+            warning: 'The configured model was unavailable. A fallback model was automatically selected.'
+          })
         }
       })
     };
