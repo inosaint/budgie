@@ -19,7 +19,9 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1"
+  },
   "devDependencies": {
     "netlify-cli": "^23.13.0"
   }
