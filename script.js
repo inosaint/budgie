@@ -664,11 +664,29 @@ function calculate() {
     const totalCost = flightCost + accommodationCost + mealCost + activityCost;
 
     lastCalculation = { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, region, includeDailyExpense, accommodation };
-    
+
+    // Track calculation in PostHog
+    if (window.posthog) {
+        posthog.capture('budget_calculated', {
+            source: source,
+            destination: destination,
+            region: region,
+            duration: duration,
+            travelers: people,
+            accommodation: accommodation,
+            total_cost: totalCost
+        });
+    }
+
     updateDisplay();
 }
 
 function reset() {
+    // Track reset in PostHog
+    if (window.posthog) {
+        posthog.capture('calculator_reset');
+    }
+
     document.getElementById('source').value = '';
     document.getElementById('destination').value = '';
     document.getElementById('duration').value = '7';
@@ -697,7 +715,17 @@ function saveReceipt() {
         showError('No Calculation Found', 'Please enter trip details and calculate before saving.');
         return;
     }
-    
+
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('receipt_saved', {
+            source: lastCalculation.source,
+            destination: lastCalculation.destination,
+            total_cost: lastCalculation.totalCost,
+            currency: document.getElementById('currency').value
+        });
+    }
+
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
     const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense, accommodation } = lastCalculation;
@@ -1399,6 +1427,17 @@ function generateItinerary() {
         return;
     }
 
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('itinerary_generate_clicked', {
+            source: lastCalculation.source,
+            destination: lastCalculation.destination,
+            duration: lastCalculation.duration,
+            travelers: lastCalculation.people,
+            accommodation: lastCalculation.accommodation
+        });
+    }
+
     const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, accommodation } = lastCalculation;
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
@@ -1459,3 +1498,48 @@ function generateItinerary() {
 setTodayAsMinDate();
 updateAccommodationLabels();
 setupAutocomplete();
+
+// PostHog: Track input field changes for user insights
+if (window.posthog) {
+    // Track source/destination inputs
+    document.getElementById('source').addEventListener('blur', (e) => {
+        if (e.target.value) {
+            posthog.capture('input_changed', { field: 'source', value: e.target.value });
+        }
+    });
+
+    document.getElementById('destination').addEventListener('blur', (e) => {
+        if (e.target.value) {
+            posthog.capture('input_changed', { field: 'destination', value: e.target.value });
+        }
+    });
+
+    // Track duration changes
+    document.getElementById('duration').addEventListener('change', (e) => {
+        posthog.capture('input_changed', { field: 'duration', value: parseInt(e.target.value) });
+    });
+
+    // Track number of travelers
+    document.getElementById('people').addEventListener('change', (e) => {
+        posthog.capture('input_changed', { field: 'travelers', value: parseInt(e.target.value) });
+    });
+
+    // Track accommodation style selection
+    document.getElementById('accommodation').addEventListener('change', (e) => {
+        posthog.capture('input_changed', { field: 'accommodation', value: e.target.value });
+    });
+
+    // Track currency selection
+    document.getElementById('currency').addEventListener('change', (e) => {
+        posthog.capture('input_changed', { field: 'currency', value: e.target.value });
+    });
+
+    // Track advanced options usage
+    document.getElementById('enableTravelDates').addEventListener('change', (e) => {
+        posthog.capture('input_changed', { field: 'enable_travel_dates', value: e.target.checked });
+    });
+
+    document.getElementById('includeDailyExpense').addEventListener('change', (e) => {
+        posthog.capture('input_changed', { field: 'include_daily_expense', value: e.target.checked });
+    });
+}

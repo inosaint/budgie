@@ -165,6 +165,13 @@ function closeSheet() {
 
 // Regenerate a single day
 async function regenerateDay(day) {
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('day_regenerated', {
+            day: day
+        });
+    }
+
     // Play dot matrix printer sound
     if (window.soundManager) {
         window.soundManager.playDotMatrixPrinter(1.5);
@@ -252,6 +259,13 @@ async function regenerateDay(day) {
 
 // Open day route in Google Maps
 function openDayInGoogleMaps(day) {
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('maps_opened', {
+            day: day
+        });
+    }
+
     if (!currentItinerary) {
         alert('No itinerary data available');
         return;
@@ -295,6 +309,11 @@ function openDayInGoogleMaps(day) {
 
 // Regenerate full itinerary
 async function regenerateItinerary() {
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('full_itinerary_regenerated');
+    }
+
     // Play dot matrix printer sound
     console.log('[SOUND DEBUG] Attempting to play regenerate itinerary sound...');
     try {
@@ -338,6 +357,11 @@ async function regenerateItinerary() {
 
 // Save itinerary as PDF
 function saveItineraryAsPDF() {
+    // Track event in PostHog
+    if (window.posthog) {
+        posthog.capture('pdf_saved');
+    }
+
     // Safari fix: Close any active sheets and overlays before printing
     // Safari applies print styles to the visible DOM, causing blank page flash
     // if overlays or transformed elements are active
@@ -415,6 +439,12 @@ async function initializePage() {
     } else {
         // Local development without Netlify Dev - show error
         console.log('Netlify functions not available');
+
+        // Stop printer sound on error
+        if (window.soundManager) {
+            window.soundManager.stopDotMatrixPrinter();
+        }
+
         showErrorState(new Error('Netlify functions not available. Please run with `netlify dev` or access the deployed site at budgie.travel to generate itineraries.'));
     }
 }
@@ -456,6 +486,8 @@ function updateBudgetSummary(tripData) {
 
 // Fetch itinerary from Claude API via Netlify Function
 async function fetchItineraryFromAPI(tripData) {
+    const startTime = performance.now(); // Track API timing
+
     try {
         showLoadingState();
 
@@ -469,21 +501,70 @@ async function fetchItineraryFromAPI(tripData) {
         });
 
         if (!response.ok) {
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+            const errorMessage = `API request failed: ${response.status} ${response.statusText}`;
+
+            // Track API failure in PostHog
+            if (window.posthog) {
+                posthog.capture('api_error', {
+                    error_type: 'http_error',
+                    status_code: response.status,
+                    error_message: errorMessage,
+                    source: tripData.source,
+                    destination: tripData.destination
+                });
+            }
+
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
 
         if (data.success && data.itinerary) {
+            const endTime = performance.now();
+            const duration = Math.round(endTime - startTime);
+
+            // Track successful API call with timing in PostHog
+            if (window.posthog) {
+                posthog.capture('itinerary_generated', {
+                    duration_ms: duration,
+                    source: tripData.source,
+                    destination: tripData.destination,
+                    days: tripData.duration,
+                    travelers: tripData.travelers
+                });
+            }
+
             currentItinerary = data.itinerary;
             hideLoadingState();
             renderItinerary();
         } else {
+            // Track invalid response
+            if (window.posthog) {
+                posthog.capture('api_error', {
+                    error_type: 'invalid_response',
+                    error_message: 'Invalid response from API'
+                });
+            }
+
             throw new Error('Invalid response from API');
         }
 
     } catch (error) {
         console.error('Error fetching itinerary:', error);
+
+        // Stop printer sound on error (bug fix)
+        if (window.soundManager) {
+            window.soundManager.stopDotMatrixPrinter();
+        }
+
+        // Track generic error if not already tracked
+        if (window.posthog && !error.message.includes('API request failed')) {
+            posthog.capture('api_error', {
+                error_type: 'fetch_error',
+                error_message: error.message
+            });
+        }
+
         hideLoadingState();
         showErrorState(error);
         // No fallback - user needs to fix the issue or try again
