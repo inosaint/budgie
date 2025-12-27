@@ -221,7 +221,16 @@ async function regenerateItinerary() {
 
 // Save itinerary as PDF
 function saveItineraryAsPDF() {
-    window.print();
+    // Safari fix: Close any active sheets and overlays before printing
+    // Safari applies print styles to the visible DOM, causing blank page flash
+    // if overlays or transformed elements are active
+    closeSheet();
+
+    // Safari fix: Small delay to let DOM settle after closing overlays
+    // This prevents Safari from applying print styles while DOM is transitioning
+    setTimeout(() => {
+        window.print();
+    }, 50);
 }
 
 // API endpoint configuration

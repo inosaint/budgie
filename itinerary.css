@@ -312,11 +312,12 @@ body {
     }
 
     .itinerary-container {
+        display: block !important;
         width: 100%;
     }
 
     #itinerarySheets {
-        display: block;
+        display: block !important;
     }
 
     .day-sheet {
