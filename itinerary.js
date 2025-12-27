@@ -312,7 +312,16 @@ function updateBudgetSummary(tripData) {
     // Update all summary fields
     document.getElementById('summaryRoute').textContent = tripData.route;
     document.getElementById('summaryDuration').textContent = `${tripData.duration} days`;
-    document.getElementById('summaryDates').textContent = tripData.dates;
+
+    // Hide date range row if dates are not provided
+    const dateRangeRow = document.getElementById('summaryDateRangeRow');
+    if (tripData.dates && tripData.dates.trim() !== '') {
+        document.getElementById('summaryDates').textContent = tripData.dates;
+        dateRangeRow.style.display = '';
+    } else {
+        dateRangeRow.style.display = 'none';
+    }
+
     document.getElementById('summaryTravelers').textContent = tripData.travelers;
     document.getElementById('summaryFlights').textContent = tripData.flights;
     document.getElementById('summaryNights').textContent = tripData.nights;
