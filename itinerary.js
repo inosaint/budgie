@@ -67,7 +67,7 @@ function renderItinerary() {
         modPanel.className = 'modification-panel';
         modPanel.innerHTML = `
             <button onclick="regenerateDay(${dayData.day})">🔄 Regenerate Day ${dayData.day}</button>
-            <button onclick="editDay(${dayData.day})">✏️ Edit Day</button>
+            <button onclick="openDayInGoogleMaps(${dayData.day})">🗺️ View Route on Maps</button>
             <button onclick="closeSheet()">✕ Close</button>
         `;
         sheet.appendChild(modPanel);
@@ -163,17 +163,134 @@ function closeSheet() {
     }
 }
 
-// Placeholder functions for modification actions
-function regenerateDay(day) {
+// Regenerate a single day
+async function regenerateDay(day) {
     // Play dot matrix printer sound
     if (window.soundManager) {
         window.soundManager.playDotMatrixPrinter(1.5);
     }
-    alert(`Regenerating Day ${day}... (Feature coming soon)`);
+
+    // Get trip data from localStorage
+    const tripDataStr = localStorage.getItem('budgieTripData');
+    if (!tripDataStr) {
+        alert('No trip data found. Please return to the calculator.');
+        return;
+    }
+
+    const tripData = JSON.parse(tripDataStr);
+
+    // Check if Netlify functions are available
+    const hasNetlifyFunctions = window.location.hostname.includes('netlify.app') ||
+                                 window.location.port === '8888' ||
+                                 (window.location.protocol !== 'file:' &&
+                                  window.location.hostname !== 'localhost' &&
+                                  window.location.hostname !== '127.0.0.1');
+
+    if (!hasNetlifyFunctions) {
+        alert('Netlify functions not available. Run with `netlify dev` or access the deployed site.');
+        return;
+    }
+
+    try {
+        // Show loading state for this day only
+        const daySheet = document.querySelector(`.day-sheet[data-day="${day}"]`);
+        const originalContent = daySheet.innerHTML;
+        daySheet.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: #666;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🖨️</div>
+                <div>Regenerating Day ${day}...</div>
+            </div>
+        `;
+
+        // Call API to regenerate single day
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ...tripData,
+                regenerateDay: day  // Signal to API that we only want one day regenerated
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.itinerary) {
+            // Update the specific day in currentItinerary
+            const dayIndex = currentItinerary.days.findIndex(d => d.day === day);
+            if (dayIndex !== -1 && data.itinerary.days[0]) {
+                currentItinerary.days[dayIndex] = data.itinerary.days[0];
+            }
+
+            // Re-render the entire itinerary to update this day
+            renderItinerary();
+
+            // Stop the sound when done
+            if (window.soundManager) {
+                window.soundManager.stopDotMatrixPrinter();
+            }
+        } else {
+            throw new Error('Invalid response from API');
+        }
+
+    } catch (error) {
+        console.error('Error regenerating day:', error);
+        alert(`Failed to regenerate Day ${day}. Please try again.`);
+        // Restore original content on error
+        renderItinerary();
+
+        if (window.soundManager) {
+            window.soundManager.stopDotMatrixPrinter();
+        }
+    }
 }
 
-function editDay(day) {
-    alert(`Editing Day ${day}... (Feature coming soon)`);
+// Open day route in Google Maps
+function openDayInGoogleMaps(day) {
+    if (!currentItinerary) {
+        alert('No itinerary data available');
+        return;
+    }
+
+    const dayData = currentItinerary.days.find(d => d.day === day);
+    if (!dayData) {
+        alert(`Day ${day} not found`);
+        return;
+    }
+
+    // Extract locations from activity descriptions
+    // We'll look for location names in the descriptions
+    const locations = dayData.activities
+        .map(activity => {
+            // Try to extract location from description
+            // This is a simple heuristic - you might want to improve it
+            const desc = activity.description;
+            // Look for patterns like "Visit X", "Explore X", "at X", etc.
+            const match = desc.match(/(?:Visit|Explore|at|to)\s+([^,\.(]+)/i);
+            return match ? match[1].trim() : null;
+        })
+        .filter(loc => loc !== null);
+
+    if (locations.length === 0) {
+        alert('No locations found in this day\'s itinerary');
+        return;
+    }
+
+    // Get the route from summary
+    const route = document.getElementById('summaryRoute').textContent;
+    const destination = route.split('→')[1]?.trim() || locations[0];
+
+    // Create Google Maps URL with directions
+    // Format: https://www.google.com/maps/dir/location1/location2/location3
+    const mapsUrl = `https://www.google.com/maps/dir/${locations.map(loc => encodeURIComponent(loc)).join('/')}`;
+
+    // Open in new tab
+    window.open(mapsUrl, '_blank');
 }
 
 // Regenerate full itinerary

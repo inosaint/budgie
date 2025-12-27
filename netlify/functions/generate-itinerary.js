@@ -79,7 +79,7 @@ exports.handler = async (event, context) => {
 
   try {
     // Parse request body
-    const { source, destination, duration, budget, travelers, dates, flights, accommodation, meals, activities, total, perPerson } = JSON.parse(event.body);
+    const { source, destination, duration, budget, travelers, dates, flights, accommodation, meals, activities, total, perPerson, regenerateDay } = JSON.parse(event.body);
 
     // Validate required fields
     if (!source || !destination || !duration) {
@@ -103,7 +103,49 @@ exports.handler = async (event, context) => {
     }
 
     // Construct the prompt for Claude
-    const prompt = `You are a professional travel planner. Generate a detailed ${duration}-day travel itinerary from ${source} to ${destination}.
+    const prompt = regenerateDay
+      ? `You are a professional travel planner. Generate activities for Day ${regenerateDay} of a ${duration}-day travel itinerary from ${source} to ${destination}.
+
+Trip Details:
+- Duration: ${duration} days
+- Travelers: ${travelers} person(s)
+- Budget tier: ${budget}
+- Travel dates: ${dates}
+- Total budget: ${total}
+- Budget breakdown:
+  * Flights: ${flights}
+  * Accommodation: ${accommodation}
+  * Meals: ${meals}
+  * Local expenses: ${activities}
+  * Per person: ${perPerson}
+
+Please create a realistic, practical itinerary for Day ${regenerateDay} that:
+1. Includes ${regenerateDay === 1 ? 'departure flight from ' + source : regenerateDay === parseInt(duration) ? 'return flight to ' + source : 'a mix of activities, sightseeing, meals, and accommodation'}
+2. Considers the budget tier (${budget}) when recommending hotels, restaurants, and activities
+3. Provides practical tips like booking advice, estimated costs, timing recommendations, and insider tips
+4. Uses appropriate icons: ✈️ for flights/transport, 🏨 for accommodation/meals, ⭐ for sightseeing/activities
+5. Is optimized for ${travelers} traveler(s)
+
+CRITICAL: You must return ONLY a valid JSON object with no additional text, explanations, or markdown formatting. The response must be pure JSON that can be parsed directly.
+
+Return the itinerary in this EXACT JSON structure:
+{
+  "days": [
+    {
+      "day": ${regenerateDay},
+      "activities": [
+        {
+          "icon": "✈️",
+          "description": "Brief activity description",
+          "notes": "Practical tips, booking advice, costs, timing"
+        }
+      ]
+    }
+  ]
+}
+
+Remember: Return ONLY the JSON object with a single day, no other text.`
+      : `You are a professional travel planner. Generate a detailed ${duration}-day travel itinerary from ${source} to ${destination}.
 
 Trip Details:
 - Duration: ${duration} days
