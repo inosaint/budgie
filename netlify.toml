@@ -11,6 +11,11 @@
   # Functions directory
   functions = "netlify/functions"
 
+# Functions configuration
+[functions]
+  # Use esbuild for bundling (handles dependencies and optimizes code)
+  node_bundler = "esbuild"
+
 [build.environment]
   # Node version for serverless functions
   NODE_VERSION = "18"
@@ -59,15 +64,17 @@
     Cache-Control = "no-cache, no-store, must-revalidate"
 
 # Plugin configuration (optional)
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
-
-  # Lighthouse configuration
-  [plugins.inputs.thresholds]
-    performance = 0.8
-    accessibility = 0.9
-    best-practices = 0.8
-    seo = 0.9
+# Lighthouse plugin disabled to reduce build minutes and costs
+# Re-enable when needed for performance testing
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+#
+#   # Lighthouse configuration
+#   [plugins.inputs.thresholds]
+#     performance = 0.8
+#     accessibility = 0.9
+#     best-practices = 0.8
+#     seo = 0.9
 
 # Development settings
 [dev]
