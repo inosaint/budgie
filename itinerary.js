@@ -1,143 +1,4 @@
-// Dummy travel itinerary data
-const dummyItinerary = {
-    days: [
-        {
-            day: 1,
-            activities: [
-                {
-                    icon: '✈️',
-                    description: 'Flight from Bangalore',
-                    notes: 'Long layover in Sydney'
-                }
-            ]
-        },
-        {
-            day: 2,
-            activities: [
-                {
-                    icon: '✈️',
-                    description: 'Land in Auckland and Checkin to Hilton',
-                    notes: 'Hotel is centrally located, luggage storage available if early arrival'
-                },
-                {
-                    icon: '⭐',
-                    description: 'Stroll through Viaduct Harbour and waterfront precinct',
-                    notes: 'Browse boutique shops and galleries, perfect for photos'
-                },
-                {
-                    icon: '⭐',
-                    description: 'Visit Sky Tower for sunset views and romantic photo opportunity',
-                    notes: 'Book tickets online to skip queues, visit at 4:30pm for best light'
-                },
-                {
-                    icon: '🏨',
-                    description: 'Dinner at Depot Eatery & Oyster Bar (farm-to-table cuisine)',
-                    notes: 'Reserve in advance, expect NZ$150-250 per couple'
-                }
-            ]
-        },
-        {
-            day: 3,
-            activities: [
-                {
-                    icon: '✈️',
-                    description: 'Land in Auckland and Checkin to Hilton',
-                    notes: 'Hotel is centrally located, luggage storage available if early arrival'
-                },
-                {
-                    icon: '⭐',
-                    description: 'Stroll through Viaduct Harbour and waterfront precinct',
-                    notes: 'Browse boutique shops and galleries, perfect for photos'
-                },
-                {
-                    icon: '⭐',
-                    description: 'Visit Sky Tower for sunset views and romantic photo opportunity',
-                    notes: 'Book tickets online to skip queues, visit at 4:30pm for best light'
-                },
-                {
-                    icon: '🏨',
-                    description: 'Dinner at Depot Eatery & Oyster Bar (farm-to-table cuisine)',
-                    notes: 'Reserve in advance, expect NZ$150-250 per couple'
-                }
-            ]
-        },
-        {
-            day: 4,
-            activities: [
-                {
-                    icon: '⭐',
-                    description: 'Morning hike at Rangitoto Island volcanic reserve',
-                    notes: 'Ferry departs at 9:15am, bring water and sunscreen'
-                },
-                {
-                    icon: '⭐',
-                    description: 'Afternoon wine tasting at Waiheke Island vineyards',
-                    notes: 'Cable Bay and Mudbrick wineries recommended'
-                },
-                {
-                    icon: '🏨',
-                    description: 'Seafood dinner at Oyster & Chop overlooking the marina',
-                    notes: 'Try the green-lipped mussels, a New Zealand specialty'
-                }
-            ]
-        },
-        {
-            day: 5,
-            activities: [
-                {
-                    icon: '⭐',
-                    description: 'Day trip to Hobbiton Movie Set in Matamata',
-                    notes: 'Book guided tour in advance, 2.5 hour drive from Auckland'
-                },
-                {
-                    icon: '⭐',
-                    description: 'Explore Rotorua geothermal parks and Maori cultural show',
-                    notes: 'Te Puia offers authentic experience with traditional hangi dinner'
-                },
-                {
-                    icon: '🏨',
-                    description: 'Return to Auckland, casual dinner at Federal Street',
-                    notes: 'Many options available, try Depot for fresh seafood'
-                }
-            ]
-        },
-        {
-            day: 6,
-            activities: [
-                {
-                    icon: '⭐',
-                    description: 'Visit Auckland Museum and Domain parklands',
-                    notes: 'Free entry on most days, allow 2-3 hours'
-                },
-                {
-                    icon: '⭐',
-                    description: 'Shop at Queen Street and Britomart precinct',
-                    notes: 'Local designers and international brands, cafes everywhere'
-                },
-                {
-                    icon: '🏨',
-                    description: 'Farewell dinner at The Grove, fine dining experience',
-                    notes: 'Reserve 2 weeks ahead, expect NZ$200-300 per person with wine'
-                }
-            ]
-        },
-        {
-            day: 7,
-            activities: [
-                {
-                    icon: '⭐',
-                    description: 'Morning walk along Mission Bay beach',
-                    notes: 'Great for photos, grab coffee at one of the beachfront cafes'
-                },
-                {
-                    icon: '✈️',
-                    description: 'Checkout and flight back to Bangalore',
-                    notes: 'Arrive at airport 3 hours early for international flight'
-                }
-            ]
-        }
-    ]
-};
+// No dummy data - we show proper error messages when API fails
 
 // Render the itinerary sheets
 function renderItinerary() {
@@ -156,8 +17,12 @@ function renderItinerary() {
     const container = document.getElementById('itinerarySheets');
     const route = document.getElementById('summaryRoute').textContent;
 
-    // Use currentItinerary if available, otherwise fallback to dummy data
-    const itinerary = currentItinerary || dummyItinerary;
+    // Use currentItinerary - should always be set by this point
+    if (!currentItinerary) {
+        console.error('No itinerary data available to render');
+        return;
+    }
+    const itinerary = currentItinerary;
 
     // Clear container first
     container.innerHTML = '';
@@ -349,10 +214,8 @@ async function regenerateItinerary() {
         // Fetch new itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Local development without Netlify Dev - use dummy data
-        alert('Netlify functions not available. Run with `netlify dev` or deploy to Netlify.');
-        currentItinerary = dummyItinerary;
-        renderItinerary();
+        // Local development without Netlify Dev - show error
+        showErrorState(new Error('Netlify functions not available. Run with `netlify dev` or deploy to Netlify to generate itineraries.'));
     }
 }
 
@@ -376,10 +239,8 @@ async function initializePage() {
     if (!tripDataStr) {
         // No trip data found - this shouldn't happen in normal flow
         console.error('No trip data found in localStorage');
-        alert('No trip data found. Please start from the budget calculator.');
         updateBudgetSummary(null);
-        currentItinerary = dummyItinerary;
-        renderItinerary();
+        showErrorState(new Error('No trip data found. Please return to the budget calculator and generate an itinerary.'));
         return;
     }
 
@@ -426,10 +287,9 @@ async function initializePage() {
         // Show loading state and fetch itinerary from API
         await fetchItineraryFromAPI(tripData);
     } else {
-        // Local development without Netlify Dev - use dummy data
-        console.log('Netlify functions not available, using dummy data');
-        currentItinerary = dummyItinerary;
-        renderItinerary();
+        // Local development without Netlify Dev - show error
+        console.log('Netlify functions not available');
+        showErrorState(new Error('Netlify functions not available. Please run with `netlify dev` or access the deployed site at budgie.travel to generate itineraries.'));
     }
 }
 
@@ -491,10 +351,7 @@ async function fetchItineraryFromAPI(tripData) {
         console.error('Error fetching itinerary:', error);
         hideLoadingState();
         showErrorState(error);
-
-        // Fallback to dummy data
-        currentItinerary = dummyItinerary;
-        renderItinerary();
+        // No fallback - user needs to fix the issue or try again
     }
 }
 
@@ -555,24 +412,39 @@ function showErrorState(error) {
             color: #666;
         ">
             <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-            <div style="font-size: 18px; margin-bottom: 10px; color: #d32f2f;">
-                Failed to generate itinerary
+            <div style="font-size: 18px; margin-bottom: 10px; color: #d32f2f; font-weight: bold;">
+                Failed to Generate Itinerary
             </div>
-            <div style="font-size: 14px; color: #999; margin-bottom: 20px; text-align: center; max-width: 500px;">
+            <div style="font-size: 14px; color: #666; margin-bottom: 30px; text-align: center; max-width: 500px; line-height: 1.6;">
                 ${error.message || 'An error occurred while generating your itinerary.'}
             </div>
-            <div style="font-size: 14px; color: #999; margin-bottom: 20px;">
-                Showing sample itinerary instead...
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                <button onclick="location.reload()" style="
+                    padding: 12px 24px;
+                    background: #333;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-family: 'Courier New', monospace;
+                    font-size: 14px;
+                    font-weight: bold;
+                ">🔄 Try Again</button>
+                <button onclick="window.location.href='index.html'" style="
+                    padding: 12px 24px;
+                    background: #666;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-family: 'Courier New', monospace;
+                    font-size: 14px;
+                ">← Back to Calculator</button>
             </div>
         </div>
     `;
 
-    // Show error briefly before showing dummy data
     container.innerHTML = errorHTML;
-
-    setTimeout(() => {
-        renderItinerary();
-    }, 2000);
 }
 
 // Initialize on page load
