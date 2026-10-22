@@ -633,6 +633,9 @@ input[type="date"]::-webkit-clear-button {
 
 /* Advanced Options */
 .advanced-toggle {
+    width: 100%;
+    font: inherit;
+    text-align: left;
     background: #2a2a2a;
     padding: 12px 20px;
     border-radius: 8px;
@@ -670,11 +673,22 @@ input[type="date"]::-webkit-clear-button {
 .advanced-section {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    /* Hidden fields stay out of the tab order until the section is open */
+    visibility: hidden;
+    transition: max-height 0.3s ease-out, visibility 0s linear 0.3s;
 }
 
 .advanced-section.open {
     max-height: 300px;
+    visibility: visible;
+    transition: max-height 0.3s ease-out, visibility 0s;
+}
+
+.advanced-toggle:focus-visible,
+.stacked-receipt:focus-visible,
+.mobile-receipt-button:focus-visible {
+    outline: 2px solid #00ff88;
+    outline-offset: 2px;
 }
 
 .advanced-content {
@@ -1411,5 +1425,14 @@ input[type="date"]::-webkit-clear-button {
 @media (max-width: 480px) {
     .mobile-receipt-button {
         /* display controlled by JS based on receipt count */
+    }
+}
+
+/* Respect the system "reduce motion" setting (e.g. the looping ERROR glitch) */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

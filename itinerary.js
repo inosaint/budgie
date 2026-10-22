@@ -1,17 +1,25 @@
 // No dummy data - we show proper error messages when API fails
 
+function escapeHtml(text) {
+    return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Render the itinerary sheets
 function renderItinerary() {
-    console.log('[SOUND DEBUG] renderItinerary called, stopping sound...');
     // Stop dot matrix printer sound when itinerary is ready to display
     try {
         if (window.soundManager) {
             window.soundManager.stopDotMatrixPrinter();
         } else {
-            console.error('[SOUND DEBUG] ERROR: window.soundManager is not defined in renderItinerary!');
+            console.error('ERROR: window.soundManager is not defined in renderItinerary!');
         }
     } catch (error) {
-        console.error('[SOUND DEBUG] ERROR stopping sound in renderItinerary:', error);
+        console.error('ERROR stopping sound in renderItinerary:', error);
     }
 
     const container = document.getElementById('itinerarySheets');
@@ -45,16 +53,16 @@ function renderItinerary() {
         const content = document.createElement('div');
         content.innerHTML = `
             <div class="sheet-header">
-                <div class="sheet-title">${route}</div>
+                <div class="sheet-title">${escapeHtml(route)}</div>
                 <div class="sheet-day">Day ${dayData.day}</div>
             </div>
             <hr class="sheet-divider">
             <div class="activities-list">
                 ${dayData.activities.map(activity => `
                     <div class="activity-item">
-                        <div class="activity-icon">${activity.icon}</div>
-                        <div class="activity-description">${activity.description}</div>
-                        <div class="activity-notes">${activity.notes}</div>
+                        <div class="activity-icon">${escapeHtml(activity.icon)}</div>
+                        <div class="activity-description">${escapeHtml(activity.description)}</div>
+                        <div class="activity-notes">${escapeHtml(activity.notes)}</div>
                     </div>
                 `).join('')}
             </div>
@@ -281,7 +289,11 @@ function openDayInGoogleMaps(day) {
     // We'll look for location names in the descriptions
     const locations = dayData.activities
         .map(activity => {
-            // Try to extract location from description
+            if (activity.location && activity.location.trim()) {
+                return activity.location.trim();
+            }
+
+            // Older itineraries have no location field, so try to extract one from the description
             // This is a simple heuristic - you might want to improve it
             const desc = activity.description;
             // Look for patterns like "Visit X", "Explore X", "at X", etc.
@@ -315,17 +327,14 @@ async function regenerateItinerary() {
     }
 
     // Play dot matrix printer sound
-    console.log('[SOUND DEBUG] Attempting to play regenerate itinerary sound...');
     try {
         if (!window.soundManager) {
-            console.error('[SOUND DEBUG] ERROR: window.soundManager is not defined!');
+            console.error('ERROR: window.soundManager is not defined!');
         } else {
-            console.log('[SOUND DEBUG] soundManager found, calling playDotMatrixPrinter(2.5)...');
             window.soundManager.playDotMatrixPrinter(2.5);
-            console.log('[SOUND DEBUG] playDotMatrixPrinter() called successfully');
         }
     } catch (error) {
-        console.error('[SOUND DEBUG] ERROR playing sound:', error);
+        console.error('ERROR playing sound:', error);
     }
 
     // Get trip data from localStorage
@@ -400,29 +409,14 @@ async function initializePage() {
     updateBudgetSummary(tripData);
 
     // Play dot matrix printer sound for initial generation
-    console.log('[SOUND DEBUG] Attempting to play initial itinerary sound...');
     try {
         if (!window.soundManager) {
-            console.error('[SOUND DEBUG] ERROR: window.soundManager is not defined!');
+            console.error('ERROR: window.soundManager is not defined!');
         } else {
-            console.log('[SOUND DEBUG] soundManager found:', window.soundManager);
-            console.log('[SOUND DEBUG] soundManager.muted:', window.soundManager.isMuted());
-            console.log('[SOUND DEBUG] soundManager.sounds:', window.soundManager.sounds);
-
-            if (window.soundManager.sounds && window.soundManager.sounds.dotMatrixPrinter) {
-                console.log('[SOUND DEBUG] dotMatrixPrinter audio element:', {
-                    src: window.soundManager.sounds.dotMatrixPrinter.src,
-                    readyState: window.soundManager.sounds.dotMatrixPrinter.readyState,
-                    error: window.soundManager.sounds.dotMatrixPrinter.error
-                });
-            }
-
-            console.log('[SOUND DEBUG] Calling playDotMatrixPrinter(2)...');
             window.soundManager.playDotMatrixPrinter(2);
-            console.log('[SOUND DEBUG] playDotMatrixPrinter() called successfully');
         }
     } catch (error) {
-        console.error('[SOUND DEBUG] ERROR playing sound:', error);
+        console.error('ERROR playing sound:', error);
     }
 
     // Check if Netlify functions are available
@@ -473,6 +467,11 @@ function updateBudgetSummary(tripData) {
     document.getElementById('summaryTransportLabel').textContent = tripData.transport === 'train' ? 'Train:' : 'Flights:';
     document.getElementById('summaryFlights').textContent = tripData.flights;
     document.getElementById('summaryNights').textContent = tripData.nights;
+    document.getElementById('summaryRooms').textContent = tripData.rooms > 1 ? ` × ${tripData.rooms} rooms` : '';
+    if (tripData.budget) {
+        const tier = tripData.budget.charAt(0).toUpperCase() + tripData.budget.slice(1);
+        document.getElementById('summaryTier').textContent = `${tier} Travel Estimate`;
+    }
     document.getElementById('summaryAccom').textContent = tripData.accommodation;
     document.getElementById('summaryMeals').textContent = tripData.meals;
     document.getElementById('summaryActivities').textContent = tripData.activities;
@@ -633,7 +632,7 @@ function showErrorState(error) {
                 Failed to Generate Itinerary
             </div>
             <div style="font-size: 14px; color: #666; margin-bottom: 30px; text-align: center; max-width: 500px; line-height: 1.6;">
-                ${error.message || 'An error occurred while generating your itinerary.'}
+                ${escapeHtml(error.message || 'An error occurred while generating your itinerary.')}
             </div>
             <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
                 <button onclick="location.reload()" style="

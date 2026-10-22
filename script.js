@@ -415,87 +415,36 @@ const activityCosts = {
 let lastCalculation = null;
 let currentFocus = -1;
 
+// Every city with coordinates can be priced, so all of them are offered in autocomplete
+const knownCities = Object.keys(cityCoords);
+
+// Returns the known city's canonical spelling ("bangalore" → "Bangalore"), or the trimmed input
+function canonicalCity(name) {
+    const trimmed = (name || '').trim();
+    return knownCities.find(city => city.toLowerCase() === trimmed.toLowerCase()) || trimmed;
+}
+
+function isKnownCity(name) {
+    return knownCities.includes(canonicalCity(name));
+}
+
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function getRegionForDestination(destination) {
-    return destinations[destination] || 'moderate';
+    return destinations[canonicalCity(destination)] || 'moderate';
 }
 
 // Autocomplete functionality
 function setupAutocomplete() {
     setupAutocompleteForField('source', 'autocomplete-list-source');
     setupAutocompleteForField('destination', 'autocomplete-list-destination');
-}
-
-// Approximate coordinates for major cities (lat, lon)
-const cityCoordinates = {
-    // India
-    'New Delhi': [28.6139, 77.2090], 'Mumbai': [19.0760, 72.8777], 'Bangalore': [12.9716, 77.5946],
-    'Hyderabad': [17.3850, 78.4867], 'Chennai': [13.0827, 80.2707], 'Kolkata': [22.5726, 88.3639],
-    'Pune': [18.5204, 73.8567], 'Ahmedabad': [23.0225, 72.5714], 'Jaipur': [26.9124, 75.7873],
-    'Goa': [15.2993, 74.1240], 'Kochi': [9.9312, 76.2673], 'Lucknow': [26.8467, 80.9462],
-    // USA
-    'New York': [40.7128, -74.0060], 'Los Angeles': [34.0522, -118.2437], 'San Francisco': [37.7749, -122.4194],
-    'Chicago': [41.8781, -87.6298], 'Boston': [42.3601, -71.0589], 'Seattle': [47.6062, -122.3321],
-    'Miami': [25.7617, -80.1918], 'Las Vegas': [36.1699, -115.1398],
-    // UK
-    'London': [51.5074, -0.1278], 'Manchester': [53.4808, -2.2426], 'Edinburgh': [55.9533, -3.1883],
-    'Birmingham': [52.4862, -1.8904],
-    // Asia
-    'Tokyo': [35.6762, 139.6503], 'Osaka': [34.6937, 135.5023], 'Kyoto': [35.0116, 135.7681],
-    'Bangkok': [13.7563, 100.5018], 'Phuket': [7.8804, 98.3923], 'Chiang Mai': [18.7883, 98.9853],
-    'Singapore': [1.3521, 103.8198], 'Hong Kong': [22.3193, 114.1694], 'Seoul': [37.5665, 126.9780],
-    'Dubai': [25.2048, 55.2708], 'Abu Dhabi': [24.4539, 54.3773], 'Kuala Lumpur': [3.1390, 101.6869],
-    'Manila': [14.5995, 120.9842], 'Jakarta': [6.2088, 106.8456], 'Bali': [-8.4095, 115.1889],
-    'Hanoi': [21.0285, 105.8542], 'Ho Chi Minh City': [10.8231, 106.6297],
-    // Europe
-    'Paris': [48.8566, 2.3522], 'Lyon': [45.7640, 4.8357], 'Nice': [43.7102, 7.2620],
-    'Rome': [41.9028, 12.4964], 'Milan': [45.4642, 9.1900], 'Venice': [45.4408, 12.3155],
-    'Florence': [43.7696, 11.2558], 'Barcelona': [41.3851, 2.1734], 'Madrid': [40.4168, -3.7038],
-    'Seville': [37.3891, -5.9845], 'Berlin': [52.5200, 13.4050], 'Munich': [48.1351, 11.5820],
-    'Frankfurt': [50.1109, 8.6821], 'Amsterdam': [52.3676, 4.9041], 'Brussels': [50.8503, 4.3517],
-    'Vienna': [48.2082, 16.3738], 'Zurich': [47.3769, 8.5417], 'Geneva': [46.2044, 6.1432],
-    'Copenhagen': [55.6761, 12.5683], 'Stockholm': [59.3293, 18.0686], 'Oslo': [59.9139, 10.7522],
-    'Helsinki': [60.1699, 24.9384], 'Reykjavik': [64.1466, -21.9426], 'Lisbon': [38.7223, -9.1393],
-    'Porto': [41.1579, -8.6291], 'Athens': [37.9838, 23.7275], 'Istanbul': [41.0082, 28.9784],
-    'Prague': [50.0755, 14.4378], 'Budapest': [47.4979, 19.0402], 'Krakow': [50.0647, 19.9450],
-    'Bucharest': [44.4268, 26.1025], 'Sofia': [42.6977, 23.3219],
-    // Oceania
-    'Sydney': [-33.8688, 151.2093], 'Melbourne': [-37.8136, 144.9631], 'Brisbane': [-27.4698, 153.0251],
-    'Auckland': [-36.8485, 174.7633],
-    // South America
-    'Buenos Aires': [-34.6037, -58.3816], 'Rio de Janeiro': [-22.9068, -43.1729], 'Sao Paulo': [-23.5505, -46.6333],
-    'Lima': [-12.0464, -77.0428], 'Bogota': [4.7110, -74.0721], 'Santiago': [-33.4489, -70.6693],
-    'La Paz': [-16.5000, -68.1500], 'Quito': [-0.1807, -78.4678],
-    // Africa
-    'Cairo': [30.0444, 31.2357], 'Marrakech': [31.6295, -7.9811], 'Tunis': [36.8065, 10.1815],
-    'Cape Town': [-33.9249, 18.4241], 'Johannesburg': [-26.2041, 28.0473], 'Nairobi': [-1.2864, 36.8172],
-    // Middle East
-    'Tel Aviv': [32.0853, 34.7818], 'Doha': [25.2854, 51.5310],
-    // North America (Canada & Mexico)
-    'Toronto': [43.6532, -79.3832], 'Vancouver': [49.2827, -123.1207], 'Montreal': [45.5017, -73.5673],
-    'Mexico City': [19.4326, -99.1332], 'Cancun': [21.1619, -86.8515],
-    // Additional
-    'Siem Reap': [13.3671, 103.8448], 'Kathmandu': [27.7172, 85.3240], 'Colombo': [6.9271, 79.8612]
-};
-
-function calculateDistance(city1, city2) {
-    const coords1 = cityCoordinates[city1];
-    const coords2 = cityCoordinates[city2];
-    
-    if (!coords1 || !coords2) return Infinity;
-    
-    // Haversine formula for great circle distance
-    const R = 6371; // Earth's radius in km
-    const lat1 = coords1[0] * Math.PI / 180;
-    const lat2 = coords2[0] * Math.PI / 180;
-    const dLat = (coords2[0] - coords1[0]) * Math.PI / 180;
-    const dLon = (coords2[1] - coords1[1]) * Math.PI / 180;
-    
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1) * Math.cos(lat2) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    
-    return R * c; // Distance in km
 }
 
 function setupAutocompleteForField(fieldId, listId) {
@@ -513,7 +462,7 @@ function setupAutocompleteForField(fieldId, listId) {
         const otherFieldId = fieldId === 'source' ? 'destination' : 'source';
         const otherValue = document.getElementById(otherFieldId).value.trim();
 
-        let matches = Object.keys(destinations).filter(dest => {
+        let matches = knownCities.filter(dest => {
             // Exclude if it matches the value in the other field
             if (otherValue && dest.toLowerCase() === otherValue.toLowerCase()) {
                 return false;
@@ -523,13 +472,9 @@ function setupAutocompleteForField(fieldId, listId) {
         
         // Sort by distance if this is destination field and source is provided
         if (fieldId === 'destination') {
-            const sourceCity = document.getElementById('source').value;
-            if (sourceCity && cityCoordinates[sourceCity]) {
-                matches.sort((a, b) => {
-                    const distA = calculateDistance(sourceCity, a);
-                    const distB = calculateDistance(sourceCity, b);
-                    return distA - distB;
-                });
+            const sourceCoords = cityCoords[canonicalCity(document.getElementById('source').value)];
+            if (sourceCoords) {
+                matches.sort((a, b) => distanceKm(sourceCoords, cityCoords[a]) - distanceKm(sourceCoords, cityCoords[b]));
             }
         }
         
@@ -608,8 +553,9 @@ function toggleAdvanced() {
     const section = document.getElementById('advancedSection');
     const icon = document.getElementById('advancedIcon');
     
-    section.classList.toggle('open');
-    icon.classList.toggle('open');
+    const isOpen = section.classList.toggle('open');
+    icon.classList.toggle('open', isOpen);
+    document.querySelector('.advanced-toggle').setAttribute('aria-expanded', String(isOpen));
 }
 
 function getSeasonalMultiplier(startDate, endDate) {
@@ -711,10 +657,10 @@ function updateAccommodationLabels() {
 }
 
 function calculate() {
-    const source = document.getElementById('source').value.trim();
-    const destination = document.getElementById('destination').value.trim();
+    const source = canonicalCity(document.getElementById('source').value);
+    const destination = canonicalCity(document.getElementById('destination').value);
     const duration = parseInt(document.getElementById('duration').value) || 0;
-    const people = parseInt(document.getElementById('people').value) || 1;
+    const people = Math.max(parseInt(document.getElementById('people').value) || 1, 1);
     const accommodation = document.getElementById('accommodation').value;
     const enableTravelDates = document.getElementById('enableTravelDates').checked;
     const startDate = enableTravelDates ? document.getElementById('startDate').value : '';
@@ -841,6 +787,7 @@ function reset() {
     document.getElementById('perPerson').textContent = '';
     
     lastCalculation = null;
+    updateAccommodationLabels();
 }
 
 function saveReceipt() {
@@ -867,9 +814,10 @@ function saveReceipt() {
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
     
-    let tripRoute = destination;
+    // City names are typed by the user, so escape them before building receipt HTML
+    let tripRoute = escapeHtml(destination);
     if (source) {
-        tripRoute = `${source} → ${destination}`;
+        tripRoute = `${escapeHtml(source)} → ${escapeHtml(destination)}`;
     }
 
     // Format dates if provided
@@ -1017,42 +965,6 @@ function closeErrorOverlay(event) {
     }
 }
 
-function generateItinerary() {
-    const source = document.getElementById('source').value;
-    const destination = document.getElementById('destination').value;
-    const duration = parseInt(document.getElementById('duration').value) || 0;
-    const people = parseInt(document.getElementById('people').value) || 1;
-    const startDate = document.getElementById('startDate').value;
-    const currency = document.getElementById('currency').value;
-    
-    if (!destination) {
-        alert('Please enter a destination to generate an itinerary!');
-        return;
-    }
-    
-    if (duration < 1) {
-        alert('Please enter trip duration!');
-        return;
-    }
-    
-    let url = 'https://traviti.netlify.app/?';
-    const params = new URLSearchParams();
-    
-    if (source) params.append('from', source);
-    params.append('destination', destination);
-    params.append('days', duration);
-    params.append('travelers', people);
-    if (startDate) params.append('startDate', startDate);
-    if (lastCalculation) {
-        const totalBudget = lastCalculation.totalCost;
-        params.append('budget', Math.round(totalBudget));
-        params.append('currency', currency);
-    }
-    
-    url += params.toString();
-    window.open(url, '_blank');
-}
-
 function downloadReceiptAsImage() {
     const receipt = document.getElementById('receipt');
     const closeButton = receipt.querySelector('.receipt-close');
@@ -1084,57 +996,29 @@ function downloadReceiptAsImage() {
     });
 }
 
-document.getElementById('startDate').addEventListener('change', syncDuration);
-document.getElementById('endDate').addEventListener('change', syncDuration);
-
-function syncDuration() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    
-    if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        
-        if (diffDays > 0) {
-            document.getElementById('duration').value = diffDays;
-        }
-    }
-}
-
+// Recalculate on any option change; calculate() clears the display until both cities are filled in.
+// Unknown cities are estimated with average prices. Dates, duration and travelers have their own handlers.
 document.querySelectorAll('input, select').forEach(element => {
-    if (element.id !== 'currency' && element.id !== 'duration' && element.id !== 'people') {
-        element.addEventListener('change', () => {
-            const source = document.getElementById('source').value;
-            const destination = document.getElementById('destination').value;
-            const duration = parseInt(document.getElementById('duration').value) || 0;
+    if (['currency', 'duration', 'people', 'startDate', 'endDate'].includes(element.id)) return;
+    element.addEventListener('change', calculate);
+});
 
-            // Only calculate if both source and destination are valid cities in our database
-            const isSourceValid = destinations.hasOwnProperty(source);
-            const isDestinationValid = destinations.hasOwnProperty(destination);
+['source', 'destination'].forEach(id => {
+    const input = document.getElementById(id);
 
-            if (source && destination && duration > 0 && isSourceValid && isDestinationValid) {
-                calculate();
-            }
-        });
-        
-        if (element.type === 'text' || element.type === 'number') {
-            element.addEventListener('input', () => {
-                const source = document.getElementById('source').value;
-                const destination = document.getElementById('destination').value;
-                const duration = parseInt(document.getElementById('duration').value) || 0;
-
-                // Only calculate if both source and destination are valid cities in our database
-                const isSourceValid = !source || destinations.hasOwnProperty(source);
-                const isDestinationValid = !destination || destinations.hasOwnProperty(destination);
-
-                if (source && destination && duration > 0 && isSourceValid && isDestinationValid) {
-                    calculate();
-                }
-            });
+    // While typing, only update once both fields hold a known city,
+    // so partial names like "Ban" don't flash fallback estimates
+    input.addEventListener('input', () => {
+        if (isKnownCity(document.getElementById('source').value) &&
+            isKnownCity(document.getElementById('destination').value)) {
+            calculate();
         }
-    }
+    });
+
+    // Tidy the spelling of known cities ("bangalore" → "Bangalore") when leaving the field
+    input.addEventListener('change', () => {
+        input.value = canonicalCity(input.value);
+    });
 });
 
 // Add specific listeners for duration and people to trigger calculation
@@ -1170,19 +1054,20 @@ document.getElementById('people').addEventListener('change', () => {
 
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-    if (e.altKey && e.key === 's') {
+    // Match the physical key: on macOS, Option+S types "ß" so e.key never equals 's'
+    if (e.altKey && e.code === 'KeyS') {
         e.preventDefault();
         if (lastCalculation) {
             saveReceipt();
         }
     }
     
-    if (e.altKey && e.key === 'c') {
+    if (e.altKey && e.code === 'KeyC') {
         e.preventDefault();
         reset();
     }
     
-    if (e.altKey && e.key === 'a') {
+    if (e.altKey && e.code === 'KeyA') {
         e.preventDefault();
         toggleAdvanced();
     }
@@ -1195,6 +1080,8 @@ document.addEventListener('keydown', function(e) {
             closeReceipt();
         } else if (errorOverlay.classList.contains('show')) {
             closeError();
+        } else {
+            closeMobileReceiptPanel();
         }
     }
 });
@@ -1320,21 +1207,50 @@ function setTodayAsMinDate() {
 let receiptCounter = 0;
 const MAX_RECEIPTS = 15; // Upper limit for receipts
 let mobileReceipts = []; // Store mobile receipts separately
+const RECEIPTS_STORAGE_KEY = 'budgieReceipts';
 
 function isMobile() {
     return window.innerWidth <= 480;
 }
 
-function addReceiptToBackground(receiptHTML) {
+// Saved receipts survive a page refresh; storage can be unavailable (private mode), so fail quietly
+function loadStoredReceipts() {
+    try {
+        return JSON.parse(localStorage.getItem(RECEIPTS_STORAGE_KEY)) || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function writeStoredReceipts(receipts) {
+    try {
+        localStorage.setItem(RECEIPTS_STORAGE_KEY, JSON.stringify(receipts.slice(-MAX_RECEIPTS)));
+    } catch (e) {
+        // Receipts still work for this session
+    }
+}
+
+function removeStoredReceipt(receiptId) {
+    writeStoredReceipts(loadStoredReceipts().filter(receipt => receipt.id !== receiptId));
+}
+
+function restoreSavedReceipts() {
+    loadStoredReceipts().forEach(receipt => addReceiptToBackground(receipt.html, receipt.id, false));
+}
+
+function addReceiptToBackground(receiptHTML, receiptId = `receipt-${Date.now()}-${receiptCounter++}`, persist = true) {
+    if (persist) {
+        writeStoredReceipts([...loadStoredReceipts(), { id: receiptId, html: receiptHTML }]);
+    }
+
     // On mobile, use the mobile receipt panel instead
     if (isMobile()) {
-        addMobileReceipt(receiptHTML);
+        addMobileReceipt(receiptHTML, receiptId);
         return;
     }
 
     // Desktop: Add to background stack
     const container = document.getElementById('receiptStackBackground');
-    const receiptId = `stacked-receipt-${receiptCounter++}`;
 
     // Check if we've hit the limit, remove oldest receipt
     const existingReceipts = container.querySelectorAll('.stacked-receipt');
@@ -1387,12 +1303,23 @@ function addReceiptToBackground(receiptHTML) {
 
     // Add content and delete button
     receiptDiv.innerHTML = `
-        <button class="stacked-receipt-delete" onclick="deleteStackedReceipt('${receiptId}', event)">×</button>
+        <button class="stacked-receipt-delete" onclick="deleteStackedReceipt('${receiptId}', event)" aria-label="Delete saved receipt">×</button>
         <div class="stacked-receipt-content">${receiptHTML}</div>
     `;
 
     // Make receipt draggable
     makeDraggable(receiptDiv, receiptHTML);
+
+    // Keyboard users can't drag, so let them open the receipt with Enter or Space
+    receiptDiv.tabIndex = 0;
+    receiptDiv.setAttribute('role', 'button');
+    receiptDiv.setAttribute('aria-label', 'Open saved receipt');
+    receiptDiv.addEventListener('keydown', e => {
+        if (e.target === receiptDiv && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            viewStackedReceipt(receiptHTML);
+        }
+    });
 
     container.appendChild(receiptDiv);
 }
@@ -1452,8 +1379,7 @@ function makeDraggable(element, receiptHTML) {
 }
 
 // Mobile Receipt Management
-function addMobileReceipt(receiptHTML) {
-    const receiptId = `mobile-receipt-${receiptCounter++}`;
+function addMobileReceipt(receiptHTML, receiptId) {
 
     // Check if we've hit the limit
     if (mobileReceipts.length >= MAX_RECEIPTS) {
@@ -1502,7 +1428,7 @@ function updateMobileReceiptList() {
             item.id = receipt.id;
 
             item.innerHTML = `
-                <button class="mobile-receipt-item-delete" onclick="deleteMobileReceipt(${index}, event)">×</button>
+                <button class="mobile-receipt-item-delete" onclick="deleteMobileReceipt(${index}, event)" aria-label="Delete saved receipt">×</button>
                 ${receipt.html}
             `;
 
@@ -1520,7 +1446,10 @@ function updateMobileReceiptList() {
 
 function deleteMobileReceipt(index, event) {
     event.stopPropagation();
-    mobileReceipts.splice(index, 1);
+    const [removed] = mobileReceipts.splice(index, 1);
+    if (removed) {
+        removeStoredReceipt(removed.id);
+    }
     updateMobileReceiptCount();
     updateMobileReceiptList();
 }
@@ -1542,6 +1471,7 @@ function viewStackedReceipt(receiptHTML) {
 
 function deleteStackedReceipt(receiptId, event) {
     event.stopPropagation();
+    removeStoredReceipt(receiptId);
     const receipt = document.getElementById(receiptId);
     if (receipt) {
         receipt.style.transition = 'all 0.3s ease';
@@ -1571,7 +1501,7 @@ function generateItinerary() {
         });
     }
 
-    const { source, destination, transport, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, accommodation } = lastCalculation;
+    const { source, destination, transport, flightCost, rooms, accommodationCost, mealCost, activityCost, totalCost, people, duration, accommodation } = lastCalculation;
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
     const rate = exchangeRates[currency];
@@ -1617,6 +1547,7 @@ function generateItinerary() {
         total: `${symbol}${Math.round(convertedTotalCost).toLocaleString()}`,
         perPerson: `${symbol}${Math.round(convertedTotalCost / people).toLocaleString()}`,
         nights: Math.max(duration - 1, 1),
+        rooms,
         perDay: `${symbol}${Math.round(convertedTotalCost / duration).toLocaleString()}`,
         route: `${source} → ${destination}`
     };
@@ -1632,6 +1563,7 @@ function generateItinerary() {
 setTodayAsMinDate();
 updateAccommodationLabels();
 setupAutocomplete();
+restoreSavedReceipts();
 
 // PostHog: Track input field changes for user insights
 if (window.posthog) {
