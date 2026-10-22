@@ -470,6 +470,7 @@ function updateBudgetSummary(tripData) {
     }
 
     document.getElementById('summaryTravelers').textContent = tripData.travelers;
+    document.getElementById('summaryTransportLabel').textContent = tripData.transport === 'train' ? 'Train:' : 'Flights:';
     document.getElementById('summaryFlights').textContent = tripData.flights;
     document.getElementById('summaryNights').textContent = tripData.nights;
     document.getElementById('summaryAccom').textContent = tripData.accommodation;

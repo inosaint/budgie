@@ -79,7 +79,7 @@ exports.handler = async (event, context) => {
 
   try {
     // Parse request body
-    const { source, destination, duration, budget, travelers, dates, flights, accommodation, meals, activities, total, perPerson, regenerateDay } = JSON.parse(event.body);
+    const { source, destination, duration, budget, travelers, dates, transport, flights, accommodation, meals, activities, total, perPerson, regenerateDay } = JSON.parse(event.body);
 
     // Validate required fields
     if (!source || !destination || !duration) {
@@ -102,6 +102,10 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Within Europe, shorter trips are budgeted by train instead of flight
+    const travelBy = transport === 'train' ? 'train' : 'flight';
+    const travelCostLabel = transport === 'train' ? 'Train' : 'Flights';
+
     // Construct the prompt for Claude
     const prompt = regenerateDay
       ? `You are a professional travel planner. Generate activities for Day ${regenerateDay} of a ${duration}-day travel itinerary from ${source} to ${destination}.
@@ -113,17 +117,17 @@ Trip Details:
 - Travel dates: ${dates}
 - Total budget: ${total}
 - Budget breakdown:
-  * Flights: ${flights}
+  * ${travelCostLabel}: ${flights}
   * Accommodation: ${accommodation}
   * Meals: ${meals}
   * Local expenses: ${activities}
   * Per person: ${perPerson}
 
 Please create a realistic, practical itinerary for Day ${regenerateDay} that:
-1. Includes ${regenerateDay === 1 ? 'departure flight from ' + source : regenerateDay === parseInt(duration) ? 'return flight to ' + source : 'a mix of activities, sightseeing, meals, and accommodation'}
+1. Includes ${regenerateDay === 1 ? 'departure ' + travelBy + ' from ' + source : regenerateDay === parseInt(duration) ? 'return ' + travelBy + ' to ' + source : 'a mix of activities, sightseeing, meals, and accommodation'}
 2. Considers the budget tier (${budget}) when recommending hotels, restaurants, and activities
 3. Provides practical tips like booking advice, estimated costs, timing recommendations, and insider tips
-4. Uses appropriate icons: ✈️ for flights/transport, 🏨 for accommodation/meals, ⭐ for sightseeing/activities
+4. Uses appropriate icons: ${travelBy === 'train' ? '🚆 for trains/transport' : '✈️ for flights/transport'}, 🏨 for accommodation/meals, ⭐ for sightseeing/activities
 5. Is optimized for ${travelers} traveler(s)
 
 CRITICAL: You must return ONLY a valid JSON object with no additional text, explanations, or markdown formatting. The response must be pure JSON that can be parsed directly.
@@ -154,17 +158,17 @@ Trip Details:
 - Travel dates: ${dates}
 - Total budget: ${total}
 - Budget breakdown:
-  * Flights: ${flights}
+  * ${travelCostLabel}: ${flights}
   * Accommodation: ${accommodation}
   * Meals: ${meals}
   * Local expenses: ${activities}
   * Per person: ${perPerson}
 
 Please create a realistic, practical itinerary that:
-1. Includes flights, accommodation check-ins/check-outs, sightseeing, activities, and meals
+1. Includes ${travelBy === 'train' ? 'train journeys' : 'flights'}, accommodation check-ins/check-outs, sightseeing, activities, and meals
 2. Considers the budget tier (${budget}) when recommending hotels, restaurants, and activities
 3. Provides practical tips like booking advice, estimated costs, timing recommendations, and insider tips
-4. Uses appropriate icons: ✈️ for flights/transport, 🏨 for accommodation/meals, ⭐ for sightseeing/activities
+4. Uses appropriate icons: ${travelBy === 'train' ? '🚆 for trains/transport' : '✈️ for flights/transport'}, 🏨 for accommodation/meals, ⭐ for sightseeing/activities
 5. Is optimized for ${travelers} traveler(s)
 
 CRITICAL: You must return ONLY a valid JSON object with no additional text, explanations, or markdown formatting. The response must be pure JSON that can be parsed directly.
@@ -185,8 +189,8 @@ Return the itinerary in this EXACT JSON structure:
   ]
 }
 
-Day 1 should include the departure flight from ${source}.
-The last day (Day ${duration}) should include the return flight to ${source}.
+Day 1 should include the departure ${travelBy} from ${source}.
+The last day (Day ${duration}) should include the return ${travelBy} to ${source}.
 All other days should include a mix of activities, sightseeing, meals, and accommodation appropriate for ${destination}.
 
 Remember: Return ONLY the JSON object, no other text.`;

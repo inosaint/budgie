@@ -28,28 +28,28 @@ const destinations = {
     'Helsinki': 'luxury', 'Monaco': 'luxury', 'Luxembourg': 'luxury'
 };
 
-// Currency exchange rates (base: USD)
+// Currency exchange rates (base: USD), updated Oct 2026
 const exchangeRates = {
-    INR: 83.12,
+    INR: 94.59,
     USD: 1,
-    EUR: 0.92,
-    GBP: 0.79,
-    JPY: 149.50,
-    AUD: 1.52,
-    CAD: 1.36,
-    CHF: 0.88,
-    CNY: 7.24,
-    SGD: 1.34,
+    EUR: 0.89,
+    GBP: 0.75,
+    JPY: 158.10,
+    AUD: 1.42,
+    CAD: 1.40,
+    CHF: 0.82,
+    CNY: 6.69,
+    SGD: 1.28,
     AED: 3.67,
-    THB: 35.25,
-    MYR: 4.72,
-    IDR: 15420,
-    KRW: 1320,
-    BRL: 4.97,
-    MXN: 17.15,
-    ZAR: 18.65,
-    TRY: 28.50,
-    RUB: 92.50
+    THB: 33.59,
+    MYR: 4.08,
+    IDR: 18030,
+    KRW: 1326,
+    BRL: 5.02,
+    MXN: 18.63,
+    ZAR: 16.37,
+    TRY: 49.64,
+    RUB: 82.00
 };
 
 const currencySymbols = {
@@ -75,12 +75,13 @@ const currencySymbols = {
     RUB: '₽'
 };
 
-// Cost databases (in USD)
+// Cost databases (in USD), updated Oct 2026.
+// Flights are up ~22-25% YoY after the 2026 Hormuz jet fuel shock (long-haul hit hardest).
 const flightCosts = {
-    domestic: 250,
-    short: 400,
-    medium: 700,
-    long: 1200
+    domestic: 310,
+    short: 490,
+    medium: 860,
+    long: 1500
 };
 
 // City to country mapping for smarter flight estimates
@@ -127,6 +128,8 @@ const cityToCountry = {
     'Krakow': 'Poland',
     'Bucharest': 'Romania',
     'Sofia': 'Bulgaria',
+    'Monaco': 'Monaco',
+    'Luxembourg': 'Luxembourg',
     // Oceania
     'Sydney': 'Australia', 'Melbourne': 'Australia', 'Brisbane': 'Australia',
     'Auckland': 'New Zealand',
@@ -148,6 +151,133 @@ const cityToCountry = {
     'Toronto': 'Canada', 'Vancouver': 'Canada', 'Montreal': 'Canada',
     'Mexico City': 'Mexico', 'Cancun': 'Mexico'
 };
+
+// City coordinates [lat, lon] for distance-based flight pricing
+const cityCoords = {
+    // India
+    'New Delhi': [28.61, 77.21], 'Mumbai': [19.08, 72.88], 'Bangalore': [12.97, 77.59],
+    'Hyderabad': [17.39, 78.49], 'Chennai': [13.08, 80.27], 'Kolkata': [22.57, 88.36],
+    'Pune': [18.52, 73.86], 'Ahmedabad': [23.02, 72.57], 'Jaipur': [26.91, 75.79],
+    'Goa': [15.38, 73.83], 'Kochi': [9.93, 76.27], 'Lucknow': [26.85, 80.95],
+    // USA
+    'New York': [40.71, -74.01], 'Los Angeles': [34.05, -118.24], 'San Francisco': [37.77, -122.42],
+    'Chicago': [41.88, -87.63], 'Boston': [42.36, -71.06], 'Seattle': [47.61, -122.33],
+    'Miami': [25.76, -80.19], 'Las Vegas': [36.17, -115.14],
+    // UK
+    'London': [51.51, -0.13], 'Manchester': [53.48, -2.24], 'Edinburgh': [55.95, -3.19],
+    'Birmingham': [52.49, -1.89],
+    // Asia
+    'Tokyo': [35.68, 139.69], 'Osaka': [34.69, 135.50], 'Kyoto': [35.01, 135.77],
+    'Bangkok': [13.76, 100.50], 'Phuket': [7.88, 98.39], 'Chiang Mai': [18.79, 98.98],
+    'Singapore': [1.35, 103.82], 'Hong Kong': [22.32, 114.17], 'Seoul': [37.57, 126.98],
+    'Taipei': [25.03, 121.57], 'Kuala Lumpur': [3.14, 101.69], 'Manila': [14.60, 120.98],
+    'Jakarta': [-6.21, 106.85], 'Bali': [-8.65, 115.22], 'Hanoi': [21.03, 105.85],
+    'Ho Chi Minh City': [10.82, 106.63], 'Siem Reap': [13.36, 103.86],
+    'Kathmandu': [27.72, 85.32], 'Colombo': [6.93, 79.86],
+    // Middle East
+    'Dubai': [25.20, 55.27], 'Abu Dhabi': [24.45, 54.38], 'Doha': [25.29, 51.53],
+    'Tel Aviv': [32.09, 34.78], 'Istanbul': [41.01, 28.98],
+    // Europe
+    'Paris': [48.86, 2.35], 'Lyon': [45.76, 4.84], 'Nice': [43.70, 7.27], 'Monaco': [43.74, 7.42],
+    'Rome': [41.90, 12.50], 'Milan': [45.46, 9.19], 'Venice': [45.44, 12.32], 'Florence': [43.77, 11.26],
+    'Barcelona': [41.39, 2.17], 'Madrid': [40.42, -3.70], 'Seville': [37.39, -5.98],
+    'Berlin': [52.52, 13.40], 'Munich': [48.14, 11.58], 'Frankfurt': [50.11, 8.68],
+    'Amsterdam': [52.37, 4.90], 'Brussels': [50.85, 4.35], 'Luxembourg': [49.61, 6.13],
+    'Vienna': [48.21, 16.37], 'Zurich': [47.38, 8.54], 'Geneva': [46.20, 6.14],
+    'Copenhagen': [55.68, 12.57], 'Stockholm': [59.33, 18.07], 'Oslo': [59.91, 10.75],
+    'Helsinki': [60.17, 24.94], 'Reykjavik': [64.15, -21.94], 'Lisbon': [38.72, -9.14],
+    'Porto': [41.15, -8.61], 'Athens': [37.98, 23.73], 'Prague': [50.08, 14.44],
+    'Budapest': [47.50, 19.04], 'Krakow': [50.06, 19.94], 'Bucharest': [44.43, 26.10],
+    'Sofia': [42.70, 23.32],
+    // Oceania
+    'Sydney': [-33.87, 151.21], 'Melbourne': [-37.81, 144.96], 'Brisbane': [-27.47, 153.03],
+    'Auckland': [-36.85, 174.76],
+    // South America
+    'Buenos Aires': [-34.60, -58.38], 'Rio de Janeiro': [-22.91, -43.17], 'Sao Paulo': [-23.55, -46.63],
+    'Lima': [-12.05, -77.04], 'Bogota': [4.71, -74.07], 'Santiago': [-33.45, -70.67],
+    'La Paz': [-16.50, -68.15], 'Quito': [-0.18, -78.47],
+    // Africa
+    'Cairo': [30.04, 31.24], 'Marrakech': [31.63, -7.99], 'Tunis': [36.81, 10.18],
+    'Cape Town': [-33.92, 18.42], 'Johannesburg': [-26.20, 28.05], 'Nairobi': [-1.29, 36.82],
+    // North America (Canada & Mexico)
+    'Toronto': [43.65, -79.38], 'Vancouver': [49.28, -123.12], 'Montreal': [45.50, -73.57],
+    'Mexico City': [19.43, -99.13], 'Cancun': [21.16, -86.85]
+};
+
+// Round-trip economy fare per person (USD, Oct 2026) by great-circle distance in km.
+// Fares between points are linearly interpolated.
+const fareCurve = [
+    [0, 80],
+    [1000, 150],
+    [3000, 350],
+    [6000, 850],
+    [10000, 1400],
+    [17000, 2100]
+];
+
+// Domestic routes are cheaper per km (more competition, no international taxes)
+const domesticFareMultiplier = 0.8;
+
+// Round-trip rail fare per person (USD, Oct 2026) for journeys within Europe
+const trainFareCurve = [
+    [0, 30],
+    [1000, 250]
+];
+
+// Beyond this, flying is usually the practical choice even within Europe
+const maxTrainDistanceKm = 1000;
+
+// No practical rail link to the other listed cities
+const noRailCities = ['Reykjavik', 'Athens'];
+
+function interpolateFare(curve, km) {
+    for (let i = 1; i < curve.length; i++) {
+        const [d0, f0] = curve[i - 1];
+        const [d1, f1] = curve[i];
+        if (km <= d1) {
+            return f0 + (f1 - f0) * (km - d0) / (d1 - d0);
+        }
+    }
+    return curve[curve.length - 1][1];
+}
+
+function distanceKm(from, to) {
+    const toRad = deg => deg * Math.PI / 180;
+    const [lat1, lon1] = from;
+    const [lat2, lon2] = to;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function isRailTrip(source, destination, km) {
+    const bothInEurope = continents[cityToCountry[source]] === 'Europe' &&
+        continents[cityToCountry[destination]] === 'Europe';
+    return bothInEurope && km <= maxTrainDistanceKm &&
+        !noRailCities.includes(source) && !noRailCities.includes(destination);
+}
+
+// Returns { mode: 'train' | 'flight', fare }, or null when either city's coordinates are unknown
+function estimateTravelFare(source, destination) {
+    const from = cityCoords[source];
+    const to = cityCoords[destination];
+    if (!from || !to) return null;
+
+    const km = distanceKm(from, to);
+    if (isRailTrip(source, destination, km)) {
+        return { mode: 'train', fare: interpolateFare(trainFareCurve, km) };
+    }
+
+    const fare = interpolateFare(fareCurve, km);
+    const sameCountry = cityToCountry[source] && cityToCountry[source] === cityToCountry[destination];
+    return { mode: 'flight', fare: sameCountry ? fare * domesticFareMultiplier : fare };
+}
+
+function transportLabel(transport) {
+    return transport === 'train' ? 'Train' : 'Flights';
+}
 
 // Continental regions for distance estimation
 const continents = {
@@ -185,6 +315,8 @@ const continents = {
     'Poland': 'Europe',
     'Romania': 'Europe',
     'Bulgaria': 'Europe',
+    'Monaco': 'Europe',
+    'Luxembourg': 'Europe',
     'UK': 'Europe',
     'USA': 'North America',
     'Canada': 'North America',
@@ -259,24 +391,24 @@ function estimateFlightType(source, destination) {
 }
 
 const accommodationCosts = {
-    budget: { budget: 30, moderate: 40, expensive: 50, luxury: 70 },
-    moderate: { budget: 60, moderate: 80, expensive: 100, luxury: 130 },
-    comfort: { budget: 100, moderate: 130, expensive: 160, luxury: 200 },
-    luxury: { budget: 200, moderate: 250, expensive: 350, luxury: 500 }
+    budget: { budget: 31, moderate: 42, expensive: 52, luxury: 73 },
+    moderate: { budget: 62, moderate: 83, expensive: 104, luxury: 135 },
+    comfort: { budget: 104, moderate: 135, expensive: 166, luxury: 208 },
+    luxury: { budget: 208, moderate: 260, expensive: 364, luxury: 520 }
 };
 
 const mealCosts = {
-    budget: 25,
-    moderate: 45,
-    expensive: 70,
-    luxury: 100
+    budget: 26,
+    moderate: 47,
+    expensive: 73,
+    luxury: 104
 };
 
 const activityCosts = {
-    budget: 20,
-    moderate: 40,
-    expensive: 60,
-    luxury: 100
+    budget: 21,
+    moderate: 42,
+    expensive: 62,
+    luxury: 104
 };
 
 // Store calculated values globally
@@ -512,7 +644,7 @@ function updateDisplay() {
     
     if (lastCalculation) {
         const currency = document.getElementById('currency').value;
-        const { flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense } = lastCalculation;
+        const { transport, flightCost, rooms, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense } = lastCalculation;
         
         document.getElementById('totalCost').innerHTML = formatCurrency(totalCost, currency);
         
@@ -520,11 +652,11 @@ function updateDisplay() {
         
         let breakdownHTML = `
             <div class="display-breakdown-item">
-                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">flight</span> Flights (${people} pax):</span>
+                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">${transport === 'train' ? 'train' : 'flight'}</span> ${transportLabel(transport)} (${people} pax):</span>
                 <span>${formatCurrency(flightCost, currency)}</span>
             </div>
             <div class="display-breakdown-item">
-                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">hotel</span> Stay (${nights} nights):</span>
+                <span><span class="material-icons" style="font-size: 13px; vertical-align: middle;">hotel</span> Stay (${nights} nights${rooms > 1 ? `, ${rooms} rooms` : ''}):</span>
                 <span>${formatCurrency(accommodationCost, currency)}</span>
             </div>
             <div class="display-breakdown-item">
@@ -562,21 +694,16 @@ function updateAccommodationLabels() {
     
     const accommodationSelect = document.getElementById('accommodation');
     const selectedValue = accommodationSelect.value;
-    
-    // Price ranges in USD
-    const ranges = {
-        budget: [0, 50],
-        moderate: [50, 100],
-        comfort: [100, 150],
-        luxury: [150, 999999]
-    };
-    
-    // Update options with converted prices
+
+    // Show the same nightly rate the calculation uses for this destination
+    const region = getRegionForDestination(document.getElementById('destination').value.trim());
+    const nightly = tier => `${symbol}${Math.round(accommodationCosts[tier][region] * rate).toLocaleString()}`;
+
     accommodationSelect.innerHTML = `
-        <option value="budget">Budget - Under ${symbol}${Math.round(50 * rate)}/night</option>
-        <option value="moderate">Mid-range - ${symbol}${Math.round(50 * rate)}-${Math.round(100 * rate)}/night</option>
-        <option value="comfort">Comfort - ${symbol}${Math.round(100 * rate)}-${Math.round(150 * rate)}/night</option>
-        <option value="luxury">Luxury - ${symbol}${Math.round(150 * rate)}+/night</option>
+        <option value="budget">Budget - ${nightly('budget')}/night</option>
+        <option value="moderate">Mid-range - ${nightly('moderate')}/night</option>
+        <option value="comfort">Comfort - ${nightly('comfort')}/night</option>
+        <option value="luxury">Luxury - ${nightly('luxury')}/night</option>
     `;
     
     // Restore selected value
@@ -655,15 +782,21 @@ function calculate() {
         }
     }
 
-    const flightCost = flightCosts[travelMode] * people * seasonalMultiplier;
+    // Prefer distance-based fare; fall back to the flight-type bands for unknown cities
+    const travelFare = estimateTravelFare(source, destination);
+    const transport = travelFare ? travelFare.mode : 'flight';
+    const farePerPerson = travelFare ? travelFare.fare : flightCosts[travelMode];
+    const flightCost = farePerPerson * people * seasonalMultiplier;
     const nights = Math.max(duration - 1, 1);
-    const accommodationCost = accommodationCosts[accommodation][region] * nights * seasonalMultiplier;
+    // Nightly rates are per room; assume travellers share two to a room
+    const rooms = Math.ceil(people / 2);
+    const accommodationCost = accommodationCosts[accommodation][region] * rooms * nights * seasonalMultiplier;
     const mealCost = mealCosts[region] * duration * people;
     const activityCost = activityCosts[region] * duration * people;
 
     const totalCost = flightCost + accommodationCost + mealCost + activityCost;
 
-    lastCalculation = { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, region, includeDailyExpense, accommodation };
+    lastCalculation = { source, destination, transport, flightCost, rooms, accommodationCost, mealCost, activityCost, totalCost, people, duration, region, includeDailyExpense, accommodation };
 
     // Track calculation in PostHog
     if (window.posthog) {
@@ -728,7 +861,7 @@ function saveReceipt() {
 
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
-    const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense, accommodation } = lastCalculation;
+    const { source, destination, transport, flightCost, rooms, accommodationCost, mealCost, activityCost, totalCost, people, duration, includeDailyExpense, accommodation } = lastCalculation;
     const nights = Math.max(duration - 1, 1);
     const perPersonCost = totalCost / people;
     const startDate = document.getElementById('startDate').value;
@@ -768,11 +901,11 @@ function saveReceipt() {
             <strong>Travelers:</strong> ${people}
         </div>
         <div class="receipt-item">
-            <span>Flights:</span>
+            <span>${transportLabel(transport)}:</span>
             <span>${formatCurrency(flightCost, currency)}</span>
         </div>
         <div class="receipt-item">
-            <span>Stay (${nights}n):</span>
+            <span>Stay (${nights}n${rooms > 1 ? ` × ${rooms} rooms` : ''}):</span>
             <span>${formatCurrency(accommodationCost, currency)}</span>
         </div>
         <div class="receipt-item">
@@ -1438,7 +1571,7 @@ function generateItinerary() {
         });
     }
 
-    const { source, destination, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, accommodation } = lastCalculation;
+    const { source, destination, transport, flightCost, accommodationCost, mealCost, activityCost, totalCost, people, duration, accommodation } = lastCalculation;
     const currency = document.getElementById('currency').value;
     const symbol = currencySymbols[currency];
     const rate = exchangeRates[currency];
@@ -1476,6 +1609,7 @@ function generateItinerary() {
         budget: accommodation, // budget tier (budget/moderate/comfort/luxury)
         travelers: people,
         dates: dateDisplay,
+        transport,
         flights: `${symbol}${Math.round(convertedFlightCost).toLocaleString()}`,
         accommodation: `${symbol}${Math.round(convertedAccommodationCost).toLocaleString()}`,
         meals: `${symbol}${Math.round(convertedMealCost).toLocaleString()}`,
