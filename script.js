@@ -25,7 +25,27 @@ const destinations = {
     'Vancouver': 'expensive', 'Montreal': 'expensive',
     // Luxury
     'Zurich': 'luxury', 'Geneva': 'luxury', 'Oslo': 'luxury', 'Reykjavik': 'luxury',
-    'Helsinki': 'luxury', 'Monaco': 'luxury', 'Luxembourg': 'luxury'
+    'Helsinki': 'luxury', 'Monaco': 'luxury', 'Luxembourg': 'luxury',
+    // More priced cities (Oct 2026)
+    'Udaipur': 'budget', 'Varanasi': 'budget', 'Amritsar': 'budget', 'Agra': 'budget',
+    'Leh': 'budget', 'Srinagar': 'budget', 'Port Blair': 'budget', 'Thiruvananthapuram': 'budget',
+    'Da Nang': 'budget', 'Phnom Penh': 'budget', 'Luang Prabang': 'budget', 'Krabi': 'budget',
+    'Penang': 'budget', 'Langkawi': 'budget', 'Cebu': 'budget', 'Dhaka': 'budget',
+    'Paro': 'moderate', 'Male': 'luxury', 'Shanghai': 'moderate', 'Beijing': 'moderate',
+    'Busan': 'moderate', 'Sapporo': 'expensive', 'Almaty': 'budget', 'Baku': 'budget',
+    'Tbilisi': 'budget', 'Muscat': 'moderate', 'Amman': 'moderate', 'Mahe': 'luxury',
+    'Port Louis': 'moderate', 'Zanzibar': 'moderate', 'Casablanca': 'budget', 'Dublin': 'expensive',
+    'Interlaken': 'luxury', 'Santorini': 'expensive', 'Dubrovnik': 'moderate', 'Naples': 'moderate',
+    'Salzburg': 'expensive', 'Valencia': 'moderate', 'Tallinn': 'moderate', 'Warsaw': 'budget',
+    'Belgrade': 'budget', 'Valletta': 'moderate', 'Washington DC': 'expensive', 'Orlando': 'expensive',
+    'Honolulu': 'expensive', 'Cusco': 'budget', 'Perth': 'expensive', 'Queenstown': 'expensive',
+    'Nadi': 'moderate', 'Chennai': 'budget', 'Kolkata': 'budget', 'Pune': 'budget',
+    'Ahmedabad': 'budget', 'Kochi': 'budget', 'Lucknow': 'budget', 'Phuket': 'budget',
+    'Abu Dhabi': 'moderate', 'Miami': 'expensive', 'Las Vegas': 'expensive', 'Manchester': 'expensive',
+    'Edinburgh': 'expensive', 'Birmingham': 'moderate', 'Lyon': 'moderate', 'Nice': 'expensive',
+    'Venice': 'expensive', 'Florence': 'moderate', 'Seville': 'moderate', 'Frankfurt': 'expensive',
+    'Brisbane': 'expensive', 'Bogota': 'budget', 'Santiago': 'moderate', 'Nairobi': 'moderate',
+    'Tel Aviv': 'expensive'
 };
 
 // Currency exchange rates (base: USD), updated Oct 2026
@@ -73,15 +93,6 @@ const currencySymbols = {
     ZAR: 'R',
     TRY: '₺',
     RUB: '₽'
-};
-
-// Cost databases (in USD), updated Oct 2026.
-// Flights are up ~22-25% YoY after the 2026 Hormuz jet fuel shock (long-haul hit hardest).
-const flightCosts = {
-    domestic: 310,
-    short: 490,
-    medium: 860,
-    long: 1500
 };
 
 // City to country mapping for smarter flight estimates
@@ -149,7 +160,22 @@ const cityToCountry = {
     'Doha': 'Qatar',
     // North America (Canada & Mexico)
     'Toronto': 'Canada', 'Vancouver': 'Canada', 'Montreal': 'Canada',
-    'Mexico City': 'Mexico', 'Cancun': 'Mexico'
+    'Mexico City': 'Mexico', 'Cancun': 'Mexico',
+    // More cities (Oct 2026)
+    'Udaipur': 'India', 'Varanasi': 'India', 'Amritsar': 'India', 'Agra': 'India',
+    'Leh': 'India', 'Srinagar': 'India', 'Port Blair': 'India', 'Thiruvananthapuram': 'India',
+    'Da Nang': 'Vietnam', 'Phnom Penh': 'Cambodia', 'Luang Prabang': 'Laos', 'Krabi': 'Thailand',
+    'Penang': 'Malaysia', 'Langkawi': 'Malaysia', 'Cebu': 'Philippines', 'Dhaka': 'Bangladesh',
+    'Paro': 'Bhutan', 'Male': 'Maldives', 'Shanghai': 'China', 'Beijing': 'China',
+    'Busan': 'South Korea', 'Sapporo': 'Japan', 'Almaty': 'Kazakhstan', 'Baku': 'Azerbaijan',
+    'Tbilisi': 'Georgia', 'Muscat': 'Oman', 'Amman': 'Jordan', 'Mahe': 'Seychelles',
+    'Port Louis': 'Mauritius', 'Zanzibar': 'Tanzania', 'Casablanca': 'Morocco', 'Dublin': 'Ireland',
+    'Interlaken': 'Switzerland', 'Santorini': 'Greece', 'Dubrovnik': 'Croatia', 'Naples': 'Italy',
+    'Salzburg': 'Austria', 'Valencia': 'Spain', 'Tallinn': 'Estonia', 'Warsaw': 'Poland',
+    'Belgrade': 'Serbia', 'Valletta': 'Malta', 'Washington DC': 'USA', 'Orlando': 'USA',
+    'Honolulu': 'USA', 'Cusco': 'Peru', 'Perth': 'Australia', 'Queenstown': 'New Zealand',
+    'Nadi': 'Fiji', 'Siem Reap': 'Cambodia', 'Kathmandu': 'Nepal', 'Colombo': 'Sri Lanka',
+    'Taipei': 'Taiwan', 'Tunis': 'Tunisia', 'La Paz': 'Bolivia', 'Quito': 'Ecuador'
 };
 
 // City coordinates [lat, lon] for distance-based flight pricing
@@ -201,10 +227,31 @@ const cityCoords = {
     'Cape Town': [-33.92, 18.42], 'Johannesburg': [-26.20, 28.05], 'Nairobi': [-1.29, 36.82],
     // North America (Canada & Mexico)
     'Toronto': [43.65, -79.38], 'Vancouver': [49.28, -123.12], 'Montreal': [45.50, -73.57],
-    'Mexico City': [19.43, -99.13], 'Cancun': [21.16, -86.85]
+    'Mexico City': [19.43, -99.13], 'Cancun': [21.16, -86.85],
+    // More cities (Oct 2026)
+    'Udaipur': [24.58, 73.71], 'Varanasi': [25.32, 82.97], 'Amritsar': [31.63, 74.87],
+    'Agra': [27.18, 78.01], 'Leh': [34.15, 77.58], 'Srinagar': [34.08, 74.80],
+    'Port Blair': [11.62, 92.73], 'Thiruvananthapuram': [8.52, 76.94], 'Da Nang': [16.05, 108.20],
+    'Phnom Penh': [11.56, 104.92], 'Luang Prabang': [19.89, 102.13], 'Krabi': [8.09, 98.91],
+    'Penang': [5.41, 100.33], 'Langkawi': [6.35, 99.80], 'Cebu': [10.32, 123.89],
+    'Dhaka': [23.81, 90.41], 'Paro': [27.43, 89.42], 'Male': [4.18, 73.51],
+    'Shanghai': [31.23, 121.47], 'Beijing': [39.90, 116.41], 'Busan': [35.18, 129.08],
+    'Sapporo': [43.06, 141.35], 'Almaty': [43.24, 76.89], 'Baku': [40.41, 49.87],
+    'Tbilisi': [41.72, 44.79], 'Muscat': [23.59, 58.41], 'Amman': [31.95, 35.93],
+    'Mahe': [-4.62, 55.45], 'Port Louis': [-20.16, 57.50], 'Zanzibar': [-6.17, 39.20],
+    'Casablanca': [33.57, -7.59], 'Dublin': [53.35, -6.26], 'Interlaken': [46.69, 7.86],
+    'Santorini': [36.39, 25.46], 'Dubrovnik': [42.65, 18.09], 'Naples': [40.85, 14.27],
+    'Salzburg': [47.81, 13.04], 'Valencia': [39.47, -0.38], 'Tallinn': [59.44, 24.75],
+    'Warsaw': [52.23, 21.01], 'Belgrade': [44.79, 20.45], 'Valletta': [35.90, 14.51],
+    'Washington DC': [38.91, -77.04], 'Orlando': [28.54, -81.38], 'Honolulu': [21.31, -157.86],
+    'Cusco': [-13.53, -71.97], 'Perth': [-31.95, 115.86], 'Queenstown': [-45.03, 168.66],
+    'Nadi': [-17.76, 177.44]
 };
 
-// Round-trip economy fare per person (USD, Oct 2026) by great-circle distance in km.
+// Cost databases (in USD), updated Oct 2026.
+// Flights are up ~22-25% YoY after the 2026 Hormuz jet fuel shock (long-haul hit hardest).
+
+// Round-trip economy fare per person (USD) by great-circle distance in km.
 // Fares between points are linearly interpolated.
 const fareCurve = [
     [0, 80],
@@ -217,6 +264,24 @@ const fareCurve = [
 
 // Domestic routes are cheaper per km (more competition, no international taxes)
 const domesticFareMultiplier = 0.8;
+
+// Smaller airports usually need a connection from abroad, which costs more than the distance suggests
+const connectingCities = ['Da Nang', 'Siem Reap', 'Luang Prabang', 'Chiang Mai', 'Langkawi', 'Cebu',
+    'Paro', 'Zanzibar', 'Santorini', 'Interlaken', 'Cusco', 'Queenstown'];
+const connectingFareMultiplier = 1.35;
+
+// Used while an unlisted city is being looked up, or if the lookup fails: a typical trip
+// within the known city's region (round trip per person, USD)
+const regionalFallbackFares = {
+    'Asia': 540,
+    'Middle East': 450,
+    'Europe': 350,
+    'North America': 500,
+    'South America': 550,
+    'Oceania': 600,
+    'Africa': 600
+};
+const defaultFallbackFare = 600;
 
 // Round-trip rail fare per person (USD, Oct 2026) for journeys within Europe
 const trainFareCurve = [
@@ -252,17 +317,60 @@ function distanceKm(from, to) {
     return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Unlisted cities are located with Open-Meteo's free geocoding API so they can be priced by distance.
+// Results are cached for the session, keyed by lowercase name.
+const geocodedCities = {};
+const countryAliases = { 'United States': 'USA', 'United Kingdom': 'UK' };
+
+function getCityCoords(name) {
+    return cityCoords[name] || geocodedCities[(name || '').toLowerCase()]?.coords;
+}
+
+function getCityCountry(name) {
+    return cityToCountry[name] || geocodedCities[(name || '').toLowerCase()]?.country;
+}
+
+// Prefer the most populous town; an airport is a good stand-in for places listed without
+// a population (e.g. "Mysore"). Skips toll gates, mountains and other non-places.
+function pickBestPlace(results) {
+    const towns = results.filter(place => (place.feature_code || '').startsWith('PPL'));
+    const populated = towns.filter(place => place.population).sort((a, b) => b.population - a.population);
+    return populated[0] || results.find(place => place.feature_code === 'AIRP') || towns[0] || null;
+}
+
+async function geocodeCity(name) {
+    const key = (name || '').trim().toLowerCase();
+    if (!key || isKnownCity(name) || key in geocodedCities) return;
+
+    geocodedCities[key] = null; // In flight; also stops repeat lookups for names with no match
+    try {
+        const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name.trim())}&count=10&language=en&format=json`;
+        const data = await (await fetch(url)).json();
+        const place = pickBestPlace(data.results || []);
+        if (place) {
+            geocodedCities[key] = {
+                coords: [place.latitude, place.longitude],
+                country: countryAliases[place.country] || place.country
+            };
+            calculate();
+        }
+    } catch (e) {
+        // Offline or blocked: keep using the regional fallback fare, and allow a retry later
+        delete geocodedCities[key];
+    }
+}
+
 function isRailTrip(source, destination, km) {
-    const bothInEurope = continents[cityToCountry[source]] === 'Europe' &&
-        continents[cityToCountry[destination]] === 'Europe';
+    const bothInEurope = continents[getCityCountry(source)] === 'Europe' &&
+        continents[getCityCountry(destination)] === 'Europe';
     return bothInEurope && km <= maxTrainDistanceKm &&
         !noRailCities.includes(source) && !noRailCities.includes(destination);
 }
 
 // Returns { mode: 'train' | 'flight', fare }, or null when either city's coordinates are unknown
 function estimateTravelFare(source, destination) {
-    const from = cityCoords[source];
-    const to = cityCoords[destination];
+    const from = getCityCoords(source);
+    const to = getCityCoords(destination);
     if (!from || !to) return null;
 
     const km = distanceKm(from, to);
@@ -271,8 +379,19 @@ function estimateTravelFare(source, destination) {
     }
 
     const fare = interpolateFare(fareCurve, km);
-    const sameCountry = cityToCountry[source] && cityToCountry[source] === cityToCountry[destination];
-    return { mode: 'flight', fare: sameCountry ? fare * domesticFareMultiplier : fare };
+    const sameCountry = getCityCountry(source) && getCityCountry(source) === getCityCountry(destination);
+    if (sameCountry) {
+        return { mode: 'flight', fare: fare * domesticFareMultiplier };
+    }
+    const needsConnection = connectingCities.includes(source) || connectingCities.includes(destination);
+    return { mode: 'flight', fare: needsConnection ? fare * connectingFareMultiplier : fare };
+}
+
+// Fare when one or both cities are unknown: a typical trip within the known city's region
+function regionalFallbackFare(source, destination) {
+    const knownCity = getCityCountry(source) ? source : destination;
+    const region = continents[getCityCountry(knownCity)];
+    return regionalFallbackFares[region] || defaultFallbackFare;
 }
 
 function transportLabel(transport) {
@@ -331,64 +450,34 @@ const continents = {
     'Egypt': 'Africa',
     'Morocco': 'Africa',
     'South Africa': 'Africa',
-    'Kenya': 'Africa'
+    'Kenya': 'Africa',
+    'Cambodia': 'Asia',
+    'Laos': 'Asia',
+    'Bangladesh': 'Asia',
+    'Bhutan': 'Asia',
+    'Maldives': 'Asia',
+    'China': 'Asia',
+    'Kazakhstan': 'Asia',
+    'Azerbaijan': 'Asia',
+    'Georgia': 'Asia',
+    'Nepal': 'Asia',
+    'Sri Lanka': 'Asia',
+    'Taiwan': 'Asia',
+    'Oman': 'Middle East',
+    'Jordan': 'Middle East',
+    'Seychelles': 'Africa',
+    'Mauritius': 'Africa',
+    'Tanzania': 'Africa',
+    'Tunisia': 'Africa',
+    'Ireland': 'Europe',
+    'Croatia': 'Europe',
+    'Estonia': 'Europe',
+    'Serbia': 'Europe',
+    'Malta': 'Europe',
+    'Bolivia': 'South America',
+    'Ecuador': 'South America',
+    'Fiji': 'Oceania'
 };
-
-function estimateFlightType(source, destination) {
-    // If no source provided, use the manual selection
-    if (!source) {
-        return null; // Will use whatever user selected
-    }
-    
-    const sourceCountry = cityToCountry[source];
-    const destCountry = cityToCountry[destination];
-    
-    // If we don't know either city, return null to use manual selection
-    if (!sourceCountry || !destCountry) {
-        return null;
-    }
-    
-    // Same country = domestic
-    if (sourceCountry === destCountry) {
-        return 'domestic';
-    }
-    
-    const sourceContinent = continents[sourceCountry];
-    const destContinent = continents[destCountry];
-    
-    // Same continent or neighboring regions
-    if (sourceContinent === destContinent) {
-        // Same continent but different country
-        if (sourceContinent === 'Europe' || sourceContinent === 'Asia') {
-            return 'short'; // Most intra-continental flights in Europe/Asia are short
-        }
-        return 'medium';
-    }
-    
-    // Different continents - determine distance
-    const intercontinentalPairs = {
-        'Asia-Europe': 'medium',
-        'Asia-Middle East': 'short',
-        'Europe-Middle East': 'short',
-        'Europe-North America': 'long',
-        'Asia-North America': 'long',
-        'Asia-Oceania': 'medium',
-        'Europe-Africa': 'short',
-        'Asia-Africa': 'medium',
-        'North America-South America': 'medium',
-        'Europe-South America': 'long',
-        'Asia-South America': 'long',
-        'Oceania-North America': 'long',
-        'Oceania-Europe': 'long',
-        'Africa-South America': 'long'
-    };
-    
-    // Check both directions
-    const pair1 = `${sourceContinent}-${destContinent}`;
-    const pair2 = `${destContinent}-${sourceContinent}`;
-    
-    return intercontinentalPairs[pair1] || intercontinentalPairs[pair2] || 'long';
-}
 
 const accommodationCosts = {
     budget: { budget: 31, moderate: 42, expensive: 52, luxury: 73 },
@@ -711,27 +800,10 @@ function calculate() {
     const region = getRegionForDestination(destination);
     const seasonalMultiplier = enableTravelDates ? getSeasonalMultiplier(startDate, endDate) : 1;
 
-    // Auto-determine flight type from source and destination
-    let travelMode = 'medium'; // default
-    if (source && destination) {
-        const estimated = estimateFlightType(source, destination);
-        if (estimated) {
-            travelMode = estimated;
-        }
-    } else if (!source && destination) {
-        // If no source, estimate based on destination region
-        const destRegion = getRegionForDestination(destination);
-        if (destRegion === 'budget' || destRegion === 'moderate') {
-            travelMode = 'short';
-        } else {
-            travelMode = 'medium';
-        }
-    }
-
-    // Prefer distance-based fare; fall back to the flight-type bands for unknown cities
+    // Prefer distance-based fare; fall back to a regional estimate for unknown cities
     const travelFare = estimateTravelFare(source, destination);
     const transport = travelFare ? travelFare.mode : 'flight';
-    const farePerPerson = travelFare ? travelFare.fare : flightCosts[travelMode];
+    const farePerPerson = travelFare ? travelFare.fare : regionalFallbackFare(source, destination);
     const flightCost = farePerPerson * people * seasonalMultiplier;
     const nights = Math.max(duration - 1, 1);
     // Nightly rates are per room; assume travellers share two to a room
@@ -1015,9 +1087,11 @@ document.querySelectorAll('input, select').forEach(element => {
         }
     });
 
-    // Tidy the spelling of known cities ("bangalore" → "Bangalore") when leaving the field
+    // Tidy the spelling of known cities ("bangalore" → "Bangalore") when leaving the field,
+    // and look up unlisted cities so they can be priced by distance
     input.addEventListener('change', () => {
         input.value = canonicalCity(input.value);
+        geocodeCity(input.value);
     });
 });
 
